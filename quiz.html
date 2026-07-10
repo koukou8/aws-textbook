@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AWS Certified CloudOps Engineer – Associate (SOA-C03) 対応の演習問題集。">
+  <title>CloudOps問題集 | AWS Study Console</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23232F3E'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='bold' text-anchor='middle' fill='%23FF9900' font-family='sans-serif'%3EA%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="fixed top-0 inset-x-0 z-40 h-12 bg-aws-squid text-white flex items-center px-4 gap-3 shadow-md">
+    <a href="index.html" class="flex items-center gap-2 font-bold text-[14.5px] shrink-0 text-white no-underline">
+      <span class="inline-flex items-center justify-center rounded-sm bg-aws-accent text-aws-squid text-[11px] font-black px-1.5 py-1 leading-none">AWS</span>
+      <span>Study Console</span>
+    </a>
+    <div id="nav-stats" class="ml-auto text-[12px] whitespace-nowrap"></div>
+  </header>
+
+  <main class="flex-1 w-full max-w-3xl mx-auto px-4 pt-12 pb-10">
+    <div id="breadcrumb" class="py-3 text-[12.5px]" aria-label="パンくずリスト"></div>
+    <div class="mb-4">
+      <h1 class="text-[22px] font-bold leading-snug">CloudOps問題集</h1>
+      <p class="text-[13px] text-aws-sub mt-1">AWS Certified CloudOps Engineer – Associate (SOA-C03) 対応の演習問題集です。</p>
+    </div>
+    <div id="quizbank-root"></div>
+  </main>
+
+  <footer class="border-t border-aws-border bg-white">
+    <div class="max-w-5xl mx-auto px-4 py-5 text-[11.5px] text-aws-sub leading-relaxed">
+      <p>本サイトは個人学習用の非公式教材です。AWSおよび関連するすべての商標はAmazon.com, Inc.またはその関連会社の商標です。</p>
+      <p>掲載内容は作成時点の情報に基づきます。最新の仕様は<a class="link" href="https://docs.aws.amazon.com/" target="_blank" rel="noopener noreferrer">AWS公式ドキュメント</a>を確認してください。</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initQuizbank } from "./js/quizbank.js";
+    initQuizbank();
+  </script>
+</body>
+</html>

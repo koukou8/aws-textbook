@@ -1,0 +1,17 @@
+{
+  "name": "aws-textbook",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AWS認定資格(SAA-C03 / SOA-C03)学習用Webアプリ",
+  "scripts": {
+    "build": "tailwindcss -i ./css/input.css -o ./css/styles.css --minify",
+    "watch": "tailwindcss -i ./css/input.css -o ./css/styles.css --watch",
+    "validate": "node scripts/validate.js",
+    "serve": "python3 -m http.server 4173"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.11",
+    "tailwindcss": "^4.1.11"
+  }
+}
