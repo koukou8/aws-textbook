@@ -203,4 +203,92 @@ export const chapters = [
       "cloudops-d3-ch02-q08",
     ],
   },
+  {
+    id: "cloudops-d3-ch03",
+    domain: 3,
+    title: "Systems Managerと運用の自動化",
+    sections: [
+      {
+        heading: "Systems Managerの基盤とマネージドノードの前提条件",
+        html: `
+<p>AWS Systems Managerは、EC2インスタンスやオンプレミスサーバーを<strong>マネージドノード</strong>として登録し、コマンド実行・パッチ適用・構成管理・リモートアクセスまでを一元化する運用サービス群です。分野3では「既存リソースの管理の自動化」の中核として、各機能の使い分けと、セットアップのトラブルシューティングが問われます。</p>
+<p>インスタンスがマネージドノードとして認識されるには、次の<strong>3つの条件</strong>がすべて満たされている必要があります。</p>
+<ol>
+  <li><strong>SSM Agentが導入・起動されている</strong>(Amazon LinuxやWindows Serverなど多くのAWS提供AMIにはプリインストール済み)</li>
+  <li><strong>インスタンスプロファイル(IAMロール)</strong>に、Systems Managerとの通信を許可する権限(AmazonSSMManagedInstanceCore管理ポリシーが代表)が付与されている</li>
+  <li>エージェントから<strong>Systems Managerエンドポイントへのアウトバウンド HTTPS(443)の経路</strong>がある。プライベートサブネットではNATゲートウェイ、またはssm・ssmmessages・ec2messagesの<strong>インターフェイスVPCエンドポイント</strong>を用意する</li>
+</ol>
+<p>SSM Agentは<strong>エージェント側からAWSへ接続するpull型</strong>のため、インバウンドポートの開放は一切不要です。この性質が、後述するSession Managerのセキュリティ上の利点にもつながります。</p>
+<div class="callout callout-warning"><span class="callout-title">試験での注意</span><p>「インスタンスがマネージドノードの一覧に表示されない」原因は、(1)エージェント未稼働、(2)インスタンスプロファイルの権限不足、(3)エンドポイントへの経路なし、の3点を順に確認します。インバウンドSSHの許可やパブリックIPアドレスは必須条件ではありません。</p></div>`,
+      },
+      {
+        heading: "Run Command・State Manager・インベントリの使い分け",
+        html: `
+<p><strong>Run Command</strong>は、SSHや踏み台サーバーを使わずに、多数のマネージドノードへコマンドやスクリプトを一括実行する機能です。実行内容はAWS-RunShellScript(Linux)やAWS-RunPowerShellScript(Windows)などの<strong>SSMドキュメント</strong>で定義し、ターゲットはインスタンスID・<strong>タグ</strong>・リソースグループで指定します。<strong>同時実行数(レート制御)とエラーしきい値</strong>を設定して段階的に実行でき、出力はS3やCloudWatch Logsへ保存できます。</p>
+<p><strong>State Manager</strong>は「あるべき状態」を<strong>関連付け(Association)</strong>として定義し、スケジュールに従って繰り返し適用する機能です。タグでターゲットを指定すれば後から起動したインスタンスにも自動適用され、手動変更などで構成が逸脱しても次回の適用時に是正されます。<strong>インベントリ</strong>は、ノードのOS・インストール済みアプリケーション・ネットワーク設定などのメタデータを収集し、ソフトウェア資産の把握やコンプライアンス確認に使います。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>要件</th><th>使う機能</th></tr></thead>
+  <tbody>
+    <tr><td>1回限りのコマンドを多数のノードへ一斉実行したい</td><td>Run Command</td></tr>
+    <tr><td>構成を継続的に維持し、逸脱を自動的に是正したい</td><td>State Manager</td></tr>
+    <tr><td>複数ステップの修復・運用ワークフローを実行したい</td><td>Automationランブック(分野1で詳述)</td></tr>
+    <tr><td>インストール済みソフトウェアの情報を収集したい</td><td>インベントリ</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout callout-note"><span class="callout-title">ポイント</span><p>「至急・1回だけ」ならRun Command、「常にこの状態を保ちたい」ならState Managerです。設問の時間軸(単発か継続か)が選択の決め手になります。</p></div>`,
+      },
+      {
+        heading: "Patch Managerによるパッチ運用の自動化",
+        html: `
+<p><strong>Patch Manager</strong>は、OSパッチの適用状況の確認(スキャン)と適用(インストール)を自動化します。構成要素は次の3つです。</p>
+<ul>
+  <li><strong>パッチベースライン</strong>: どのパッチを承認するかのルール。分類や重要度による<strong>自動承認ルール</strong>(例: リリースから7日経過で自動承認)と、明示的な承認・拒否リストを定義できます</li>
+  <li><strong>パッチグループ</strong>: 「Patch Group」タグでインスタンスをグループ化し、ベースラインと関連付けます。本番と開発で異なるベースラインを使い分ける場合の仕組みです</li>
+  <li><strong>メンテナンスウィンドウ</strong>: パッチ適用などの作業を実行してよい時間帯・頻度・同時実行数を定義するスケジュール枠です</li>
+</ul>
+<p>実際のスキャン・適用は<strong>AWS-RunPatchBaseline</strong>ドキュメントの実行で行われ、<strong>Operationパラメータ</strong>で動作が決まります。<strong>Scanは未適用パッチの検出とコンプライアンス報告のみ</strong>で、パッチは適用しません。<strong>Install</strong>は承認済みパッチを適用し、必要に応じてインスタンスを再起動します。結果はコンプライアンスとして集計され、未適用(Missing)パッチが残るインスタンスを特定できます。</p>
+<div class="callout callout-warning"><span class="callout-title">試験での注意</span><p>「スキャンは毎日実行されているのにパッチが適用されない」という設問の答えは、OperationがScanのままでInstallが実行されていない、が定番です。ScanとInstallの違いは必ず押さえましょう。</p></div>`,
+      },
+      {
+        heading: "Session ManagerとParameter Store",
+        html: `
+<p><strong>Session Manager</strong>は、マネジメントコンソール(ブラウザ)やCLIからマネージドノードへの対話型シェルアクセスを提供します。SSM Agentがアウトバウンド接続で通信するため、<strong>インバウンドポートの開放・踏み台サーバー・SSH鍵の管理がすべて不要</strong>になります。アクセス可否はIAMポリシーで制御でき(タグによる対象ノードの限定も可能)、<strong>セッションの操作ログをS3またはCloudWatch Logsへ保存</strong>できるため、「ポート22を閉じたい」「操作の監査証跡を残したい」という要件への定番解です。詳細は<a href="https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/session-manager.html" target="_blank" rel="noopener noreferrer">Session Managerのドキュメント</a>を参照してください。</p>
+<p><strong>Parameter Store</strong>は、設定値や接続文字列を階層構造(/prod/db/url など)で保管するサービスです。パラメータの種類はString、StringList、そしてKMSで暗号化される<strong>SecureString</strong>の3つで、標準パラメータは追加料金なしで利用できます。CloudFormation、Lambda、ECSタスク定義などから参照でき、環境ごとの設定の一元管理に適しています。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>Parameter Store</th><th>Secrets Manager</th></tr></thead>
+  <tbody>
+    <tr><td>主な用途</td><td>設定値全般+シークレット(SecureString)</td><td>シークレット専用</td></tr>
+    <tr><td>自動ローテーション</td><td>組み込み機能なし(自作が必要)</td><td><strong>組み込みで対応</strong>(RDSなどと統合)</td></tr>
+    <tr><td>料金</td><td>標準パラメータは追加料金なし</td><td>シークレット単位+APIコールで課金</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout callout-note"><span class="callout-title">ポイント</span><p>「自動ローテーションが必須」ならSecrets Manager、「暗号化して保管できれば十分・低コスト優先」ならParameter StoreのSecureString、が使い分けの決め手です。</p></div>`,
+      },
+      {
+        heading: "イベント駆動の自動化とECS/EKSデプロイの基礎",
+        html: `
+<p>運用の自動化は「イベントを起点に処理をつなぐ」ことで人手の作業を排除します。<strong>S3イベント通知</strong>は、オブジェクトの作成・削除などを契機に<strong>Lambda、SQS、SNS</strong>へ通知でき、EventBridgeへの送信を有効化すれば、より柔軟なフィルタリングと複数ターゲットへのルーティングも可能です。プレフィックス・サフィックス(例: uploads/ と .jpg)で対象オブジェクトを絞り込めます。</p>
+<div class="callout callout-important"><span class="callout-title">重要</span><p>S3イベント通知がLambda関数を直接呼び出すには、関数側の<strong>リソースベースポリシー</strong>でS3からの実行(lambda:InvokeFunction)を許可する必要があります。コンソールで設定すると自動付与されますが、CloudFormationやCLIで構成する場合はAWS::Lambda::Permissionの定義漏れが「アップロードしても関数が起動しない」原因の定番です。</p></div>
+<p><strong>Amazon EventBridge</strong>は、AWSサービスのイベントやスケジュール(cron/rate式)をルールで受け取り、Lambda・SSM Automation・SQSなどのターゲットを起動します。「夜間に開発環境のインスタンスを停止する」「特定のAPI呼び出しを検知して修復処理を走らせる」など、スケジュール駆動・イベント駆動どちらの自動化でも中心になるサービスです。</p>
+<h4>ECS/EKSデプロイの基礎</h4>
+<p>Amazon ECSでは、コンテナイメージやCPU・メモリ設定を<strong>タスク定義</strong>のリビジョンとして登録し、<strong>サービス</strong>を新しいリビジョンへ更新すると<strong>ローリング更新</strong>でタスクが順次置き換わります。置き換えの幅はminimumHealthyPercentとmaximumPercentで制御します。タスクは<strong>起動時にイメージを取得する</strong>ため、同じタグ(latestなど)のまま中身だけ更新しても稼働中のタスクには反映されず、<strong>「新しいデプロイの強制(force new deployment)」</strong>か、一意なタグを使った新リビジョンの登録が必要です。イメージの保管はAmazon ECRが担い、Amazon EKSではマニフェストの適用によりKubernetesが同様のローリング更新を行います。</p>
+<div class="callout callout-note"><span class="callout-title">ポイント</span><p>「latestタグを上書きしたのに反映されない」→ 新しいデプロイの強制、が定番パターンです。運用上はコミットIDなど一意のイメージタグを使うと、変更履歴の追跡とロールバックも容易になります。</p></div>`,
+      },
+    ],
+    checkQuestionIds: [
+      "cloudops-d3-ch03-q01",
+      "cloudops-d3-ch03-q02",
+      "cloudops-d3-ch03-q03",
+      "cloudops-d3-ch03-q04",
+      "cloudops-d3-ch03-q05",
+      "cloudops-d3-ch03-q06",
+      "cloudops-d3-ch03-q07",
+      "cloudops-d3-ch03-q08",
+      "cloudops-d3-ch03-q09",
+    ],
+  },
 ];

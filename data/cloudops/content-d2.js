@@ -254,4 +254,122 @@ export const chapters = [
       "cloudops-d2-ch02-q09",
     ],
   },
+  {
+    id: "cloudops-d2-ch03",
+    domain: 2,
+    title: "バックアップと復元戦略",
+    sections: [
+      {
+        heading: "AWS Backupによるバックアップの一元管理",
+        html: `
+<p>AWS Backupは、複数のAWSサービスのバックアップを<strong>一元的に管理・自動化</strong>するマネージドサービスです。Amazon EBS、Amazon EC2、Amazon RDS、Amazon Aurora、Amazon DynamoDB、Amazon EFS、Amazon FSx、Amazon S3などを単一のポリシーで扱えます。中心となる構成要素は次のとおりです。</p>
+<ul>
+  <li><strong>バックアッププラン</strong>: 取得スケジュール、保持期間、コールドストレージへの移行ルールを定義します。対象リソースは<strong>タグベース</strong>で自動割り当てできるため、リソースが増えても運用負荷が上がりません</li>
+  <li><strong>バックアップボールト</strong>: 復旧ポイント(個々のバックアップ)の保存先です。AWS KMSキーで暗号化され、アクセスポリシーで操作を制御できます</li>
+</ul>
+<p>ボールトには<strong>AWS Backup Vault Lock</strong>を設定でき、保持期間中のバックアップ削除を管理者を含めて実行できないようにする(WORM)ことで、ランサムウェアや内部不正への対策になります。また、バックアッププランには<strong>クロスリージョンコピー</strong>と<strong>クロスアカウントコピー</strong>を追加できます。リージョン障害への備えならクロスリージョン、アカウント侵害時にもバックアップを守りたいならクロスアカウント(同一のAWS Organizations組織内が前提)、と目的で使い分けます。</p>
+<div class="callout callout-warning">
+  <span class="callout-title">試験での注意</span>
+  <p>「複数サービスにまたがるバックアップを<strong>最小の運用負荷で一元管理・監査したい</strong>」という要件はAWS Backupが正解の合図です。サービスごとに個別のスクリプトやスナップショット設定を作る選択肢は、運用負荷の観点で不適切になります。</p>
+</div>`,
+      },
+      {
+        heading: "EBSスナップショットの運用とData Lifecycle Manager",
+        html: `
+<p>Amazon EBSの<strong>スナップショット</strong>は、ボリュームのある時点の状態をAmazon S3が管理するストレージへ保存するバックアップ機能です。運用で押さえるべき特性は次のとおりです。</p>
+<ul>
+  <li><strong>増分バックアップ</strong>: 初回はフルコピー、2回目以降は前回から変更のあったブロックのみを保存します。増分方式でも各スナップショットから単独で復元でき、<strong>途中のスナップショットを削除しても他のスナップショットからの復元には影響しません</strong></li>
+  <li><strong>整合性</strong>: 稼働中でも取得できますが、整合性を高めるにはI/Oを静止した状態で取得します。ルートボリュームはインスタンスを停止してからの取得が確実です</li>
+  <li><strong>復元時の遅延読み込み</strong>: スナップショットから作成した新しいボリュームは、ブロックが初回アクセス時に読み込まれるため一時的にレイテンシが増加します。復元直後から本来の性能が必要な場合は<strong>高速スナップショット復元(FSR)</strong>を有効化します</li>
+</ul>
+<p>取得・保持・削除の自動化には<strong>Amazon Data Lifecycle Manager(DLM)</strong>を使います。タグで対象ボリュームを指定し、「12時間ごとに取得して7世代保持」のようなポリシーを定義でき、EBSスナップショットとEBS-backed AMIの世代管理を自動化できます。</p>
+<div class="callout callout-note">
+  <span class="callout-title">ポイント</span>
+  <p>EBSだけの世代管理ならDLM、複数サービスをまとめた統制やボールトロックが必要ならAWS Backup、という使い分けが定番です。</p>
+</div>`,
+      },
+      {
+        heading: "RDS自動バックアップとポイントインタイムリカバリ",
+        html: `
+<p>Amazon RDSの<strong>自動バックアップ</strong>を有効にすると、バックアップウィンドウで日次スナップショットが取得され、さらに<strong>トランザクションログが5分ごと</strong>に保存されます。この組み合わせにより、保持期間(1〜35日)内の任意の時点へ復元する<strong>ポイントインタイムリカバリ(PITR)</strong>が可能になります(直近は約5分前まで)。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>自動バックアップ</th><th>手動スナップショット</th></tr></thead>
+  <tbody>
+    <tr><td>取得</td><td>日次+トランザクションログ(自動)</td><td>任意のタイミングで手動取得</td></tr>
+    <tr><td>保持期間</td><td>1〜35日</td><td>無制限(削除するまで残る)</td></tr>
+    <tr><td>PITR</td><td>可能</td><td>不可(取得時点へのみ復元)</td></tr>
+    <tr><td>インスタンス削除時</td><td>既定では削除(保持するオプションあり)</td><td>削除されず残る</td></tr>
+  </tbody>
+</table>
+</div>
+<p>運用上の最重要ポイントは、復元が既存インスタンスの巻き戻しではなく<strong>常に新しいDBインスタンスとして作成される</strong>ことです。エンドポイント名が変わるため、アプリケーションの接続先切り替えまでが復旧手順に含まれます。また、リージョン障害に備えて自動バックアップを別リージョンへ複製する<strong>クロスリージョン自動バックアップレプリケーション</strong>も設定できます。</p>
+<div class="callout callout-warning">
+  <span class="callout-title">試験での注意</span>
+  <p>「誤った更新処理を実行してしまい、<strong>実行直前の状態に戻したい</strong>」というシナリオはPITRが正解です。日次スナップショットのみの復元ではRPOが最大24時間となり要件を満たせません。長期保管(35日超)の要件には手動スナップショットまたはAWS Backupを使います。</p>
+</div>`,
+      },
+      {
+        heading: "S3バージョニングとレプリケーション",
+        html: `
+<p>Amazon S3の<strong>バージョニング</strong>は、同じキーのオブジェクトを複数バージョンとして保持し、上書きや削除からデータを保護する機能です。</p>
+<ul>
+  <li>削除操作は実データを消すのではなく<strong>削除マーカー</strong>を最新バージョンとして置くだけです。削除マーカーを取り除けば元のオブジェクトへアクセスでき、誤削除から復旧できます</li>
+  <li>一度有効化したバージョニングは無効化できず、<strong>「停止」のみ可能</strong>です</li>
+  <li>旧バージョンの蓄積はストレージコストを増やすため、<strong>ライフサイクルルール</strong>で非現行バージョンを低コストのストレージクラスへ移行、または期限切れで削除します</li>
+  <li>削除操作にルートユーザーのMFAを必須にする<strong>MFA Delete</strong>で保護を強化できます</li>
+</ul>
+<h4>レプリケーション(CRR / SRR)</h4>
+<p>レプリケーションはオブジェクトを別バケットへ自動複製する機能で、<strong>クロスリージョンレプリケーション(CRR)</strong>と<strong>同一リージョンレプリケーション(SRR)</strong>があります。DRやコンプライアンス(別リージョン保管)にはCRR、ログの集約や本番・テスト環境間の同期にはSRRが定番です。運用上の注意点は次のとおりです。</p>
+<ul>
+  <li>送信元・送信先の<strong>両方のバケットでバージョニングの有効化が必須</strong>です</li>
+  <li>ルール設定<strong>以前の既存オブジェクトは複製されません</strong>。既存分も複製するには<strong>S3バッチレプリケーション</strong>を実行します</li>
+  <li>既定では削除マーカーは複製されません(オプションで有効化可能)</li>
+  <li>複製完了時間に15分の目標が必要な場合は<strong>S3レプリケーションタイムコントロール(S3 RTC)</strong>を有効化します</li>
+</ul>
+<div class="callout callout-note">
+  <span class="callout-title">ポイント</span>
+  <p>「誤削除・上書きへの備え」はバージョニング、「別リージョンへの自動複製」はCRR、と要件で使い分けます。レプリケーションは削除の伝播を既定で行わないとはいえ、バージョニングの代替にはなりません。</p>
+</div>`,
+      },
+      {
+        heading: "RTO・RPOとDR4戦略の運用",
+        html: `
+<p>災害対策(DR)の設計は、2つの目標値を定めることから始まります。</p>
+<ul>
+  <li><strong>RTO(目標復旧時間)</strong>: 障害発生からサービス復旧までに許容できる時間</li>
+  <li><strong>RPO(目標復旧時点)</strong>: 許容できるデータ損失を時間で表したもの(どの時点のデータまで戻ってよいか)</li>
+</ul>
+<p>AWSはDR戦略を4つに整理しており、下へ行くほどRTO/RPOが短くなる一方、平常時のコストが増加します。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>戦略</th><th>平常時のDRリージョン</th><th>RTO/RPOの目安</th><th>コスト</th></tr></thead>
+  <tbody>
+    <tr><td>バックアップ&リストア</td><td>バックアップをコピーして保管するのみ。リソースは復旧時に作成</td><td>時間単位</td><td>最小</td></tr>
+    <tr><td>パイロットライト</td><td>データは常時レプリケート。DBなどコア要素のみ稼働し、アプリケーション層は停止</td><td>数十分</td><td>小</td></tr>
+    <tr><td>ウォームスタンバイ</td><td><strong>縮小規模のフル機能システムが常時稼働</strong>。切替時にスケールアウト</td><td>分単位</td><td>中</td></tr>
+    <tr><td>マルチサイトアクティブ/アクティブ</td><td>複数リージョンで同規模の本番が稼働し、同時にトラフィックを処理</td><td>ほぼゼロ〜リアルタイム</td><td>最大</td></tr>
+  </tbody>
+</table>
+</div>
+<p>パイロットライトとウォームスタンバイの違いは「<strong>切り替え前からリクエストを処理できる状態か</strong>」です。パイロットライトはアプリケーション層を起動するまで処理できないのに対し、ウォームスタンバイは縮小構成のまま即座に処理を開始できます。</p>
+<p>運用面では、切り替えの起点としてAmazon Route 53のヘルスチェックとフェイルオーバールーティングを使い、データ面ではAmazon Auroraグローバルデータベース、DynamoDBグローバルテーブル、S3のCRR、AWS Backupのクロスリージョンコピーなどを戦略に応じて組み合わせます。サーバー単位の継続的なリージョン間レプリケーションには<strong>AWS Elastic Disaster Recovery</strong>が利用でき、低コストのステージング領域へ複製しながら短いRTO/RPOを実現します。</p>
+<div class="callout callout-important">
+  <span class="callout-title">重要</span>
+  <p>試験では「RTO ○分・RPO ○分を<strong>最小コストで</strong>満たす戦略」を選ばせます。要件を満たす戦略が複数あるときは、<strong>より低コストな戦略(表の上側)が正解</strong>になるのが定石です。</p>
+</div>`,
+      },
+    ],
+    checkQuestionIds: [
+      "cloudops-d2-ch03-q01",
+      "cloudops-d2-ch03-q02",
+      "cloudops-d2-ch03-q03",
+      "cloudops-d2-ch03-q04",
+      "cloudops-d2-ch03-q05",
+      "cloudops-d2-ch03-q06",
+      "cloudops-d2-ch03-q07",
+      "cloudops-d2-ch03-q08",
+      "cloudops-d2-ch03-q09",
+    ],
+  },
 ];
