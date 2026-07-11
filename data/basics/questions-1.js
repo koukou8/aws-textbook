@@ -519,7 +519,7 @@ export const questions = [
     ],
     answerIndexes: [1],
     explanation:
-      "正解はBです。S3 Glacier Deep ArchiveはS3の中で最も保存料金が低いクラスで、取り出しに12時間以上かかる代わりに、規制対応の長期保管のようにほぼアクセスしないデータの保管コストを最小化できます。AのStandardは高頻度アクセス向けで、7年間の保管には割高です。CのIntelligent-Tieringはアクセスパターンが不明な場合に有効ですが、ほぼアクセスしないと確定しているデータならDeep Archiveのほうが安価です。DのGlacier Instant Retrievalはミリ秒での取り出しが可能な分、保存料金がDeep Archiveより高く、半日待てる本要件には過剰です。",
+      "正解はBです。S3 Glacier Deep ArchiveはS3の中で最も保存料金が低いクラスで、取り出しに標準で最大12時間かかる代わりに、規制対応の長期保管のようにほぼアクセスしないデータの保管コストを最小化できます。AのStandardは高頻度アクセス向けで、7年間の保管には割高です。CのIntelligent-Tieringはアクセスパターンが不明な場合に有効ですが、ほぼアクセスしないと確定しているデータならDeep Archiveのほうが安価です。DのGlacier Instant Retrievalはミリ秒での取り出しが可能な分、保存料金がDeep Archiveより高く、半日待てる本要件には過剰です。",
     reference:
       "https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/storage-class-intro.html",
   },

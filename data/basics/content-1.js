@@ -385,7 +385,7 @@ export const chapters = [
     <tr><td>S3 One Zone-IA</td><td>単一AZ保存でStandard-IAよりさらに安価</td><td>再作成可能な低頻度データ</td></tr>
     <tr><td>S3 Glacier Instant Retrieval</td><td>アーカイブ価格で<strong>ミリ秒アクセス</strong></td><td>四半期に1回程度参照するアーカイブ</td></tr>
     <tr><td>S3 Glacier Flexible Retrieval</td><td>取り出しに数分〜数時間</td><td>即時性が不要なアーカイブ</td></tr>
-    <tr><td>S3 Glacier Deep Archive</td><td>最安。取り出しに<strong>12時間以上</strong></td><td>規制対応の長期保管(7〜10年)</td></tr>
+    <tr><td>S3 Glacier Deep Archive</td><td>最安。取り出しは<strong>標準で12時間以内</strong>(バルクは48時間以内)</td><td>規制対応の長期保管(7〜10年)</td></tr>
   </tbody>
 </table>
 </div>

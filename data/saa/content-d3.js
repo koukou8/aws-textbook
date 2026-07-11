@@ -104,7 +104,7 @@ export const chapters = [
   <thead><tr><th>ゲートウェイ</th><th>プロトコル</th><th>ユースケース</th></tr></thead>
   <tbody>
     <tr><td>S3 File Gateway</td><td>NFS / SMB</td><td>ファイルをオブジェクトとしてS3に保存。頻繁にアクセスするデータは<strong>ローカルにキャッシュ</strong></td></tr>
-    <tr><td>FSx File Gateway</td><td>SMB</td><td>オンプレからFSx for Windows File Serverへの低レイテンシアクセス</td></tr>
+    <tr><td>FSx File Gateway</td><td>SMB</td><td>オンプレからFSx for Windows File Serverへの低レイテンシアクセス(2024年10月以降、新規利用は不可)</td></tr>
     <tr><td>Volume Gateway(キャッシュ型)</td><td>iSCSI(ブロック)</td><td>データ本体はS3、よく使うデータのみローカルキャッシュ</td></tr>
     <tr><td>Volume Gateway(保管型)</td><td>iSCSI(ブロック)</td><td>データ全体をローカルに保持し、非同期でS3へスナップショットをバックアップ</td></tr>
     <tr><td>Tape Gateway</td><td>iSCSI VTL</td><td>物理テープ運用を仮想テープに置き換え、S3/Glacierへ保存</td></tr>
