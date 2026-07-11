@@ -3,43 +3,43 @@ export const questions = [
   {
     id: "qb-d3-023",
     domain: 3,
-    topic: "Run Command",
+    topic: "Distributor",
     type: "single",
-    difficulty: "easy",
+    difficulty: "medium",
     question:
-      "ある企業のCloudOpsエンジニアが、Environment=Production タグの付いた数百台のEC2インスタンス(すべてSSMマネージドノード)に対して、SSH接続やインスタンスへのログインを行わずに、診断用のシェルスクリプトを一斉に実行する必要があります。最小の運用負荷で実現できる方法はどれですか。",
+      "ある企業は、社内で開発した監視エージェントを、Systems Managerのマネージドノードである数百台のEC2インスタンスへ特定のバージョンでインストールし、以後のバージョン更新も管理された形で配布したいと考えています。独自の配布の仕組みを作らずに実現できる方法はどれですか。",
     choices: [
-      "踏み台ホストを構築し、各インスタンスへSSH接続してスクリプトを順番に実行する",
-      "Systems Manager Run Commandで、タグをターゲットに指定してAWS-RunShellScriptドキュメントを実行する",
-      "スクリプトを組み込んだ新しいAMIを作成し、すべてのインスタンスを置き換える",
-      "各インスタンスのユーザーデータにスクリプトを追加し、再起動して実行させる",
+      "Systems Manager Distributorでエージェントをパッケージとしてバージョン管理し、マネージドノードへ配布・インストールする",
+      "各インスタンスのユーザーデータにインストールスクリプトを記述し、エージェントを導入する",
+      "エージェントを組み込んだ新しいAMIを作成し、すべてのインスタンスを置き換えて反映する",
+      "Amazon S3にインストーラを配置し、各インスタンスの管理者が手動でダウンロードして実行する",
     ],
-    answerIndexes: [1],
+    answerIndexes: [0],
     explanation:
-      "正解はBです。Run Commandは、SSM Agent経由でマネージドノードにコマンドを一斉実行できる機能で、SSHや踏み台は不要です。ターゲットはタグやリソースグループで指定でき、実行結果もコンソールで一元確認できます。Aは踏み台の構築・SSH鍵の管理・逐次実行という大きな運用負荷が発生します。Cは1回の診断コマンド実行のためにフリート全体を置き換えるのは過剰です。Dのユーザーデータは既定では初回起動時にのみ実行されるもので、稼働中のインスタンスへの一斉コマンド実行には適しません。",
+      "正解はAです。Systems Manager Distributorは、独自ソフトウェアやAWS提供のエージェントをパッケージとしてバージョン管理し、Run CommandやState Managerと連携してマネージドノードへ配布・インストール・更新できる機能です。特定バージョンの指定や常に最新版を配布する運用も可能で、独自の配布基盤を構築する必要がありません。Bのユーザーデータは既定では初回起動時にのみ実行され、稼働中のノードやバージョン更新には対応できません。CのAMI置き換えは1つのエージェント導入のためには過剰で、バージョン管理された配布にもなりません。Dの手動ダウンロードは運用負荷が高く、配布状況やバージョンの一元管理もできません。",
     reference:
-      "https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/execute-remote-commands.html",
+      "https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/distributor.html",
   },
   {
     id: "qb-d3-024",
     domain: 3,
-    topic: "SSMマネージドインスタンス",
+    topic: "Run Command出力",
     type: "multiple",
-    difficulty: "hard",
+    difficulty: "medium",
     question:
-      "CloudOpsエンジニアが、インターネットへの経路がないプライベートサブネットに新しいEC2インスタンスを起動しました。SSM Agentはインストール済みですが、Systems Managerのフリートマネージャーにマネージドノードとして表示されません。原因として考えられるものはどれですか。(2つ選択してください)",
+      "CloudOpsエンジニアが、多数のマネージドノードに対してSystems Manager Run Commandで実行したコマンドの完全な出力を、監査のために長期間保存し、後から検索・確認できるようにする必要があります。コンソールに表示される出力は文字数が制限されており不十分です。適切な方法はどれですか。(2つ選択してください)",
     choices: [
-      "AmazonSSMManagedInstanceCoreポリシーを含むIAMインスタンスプロファイルがアタッチされていない",
-      "インスタンスのセキュリティグループでインバウンドのTCP 443が許可されていない",
-      "インスタンスにElastic IPアドレスが関連付けられていない",
-      "ssm・ssmmessages・ec2messages用のインターフェイスVPCエンドポイントが作成されていない",
-      "インスタンスの詳細モニタリングが有効化されていない",
+      "コマンドの出力の送信先としてAmazon S3バケットを指定する",
+      "コマンドの出力の送信先としてAmazon CloudWatch Logsを指定する",
+      "AWS CloudTrailのデータイベントを有効化して、コマンドの出力内容を記録する",
+      "VPCフローログを有効化して、コマンドの実行結果を保存する",
+      "Systems Managerインベントリを有効化して、コマンドの出力を収集する",
     ],
-    answerIndexes: [0, 3],
+    answerIndexes: [0, 1],
     explanation:
-      "正解はAとDです。インスタンスがSSMに登録されるには、SSM権限を付与するIAMインスタンスプロファイルと、SSMの各エンドポイントへのアウトバウンドHTTPS到達性の両方が必要です。インターネット経路のないサブネットでは、ssm・ssmmessages・ec2messagesのインターフェイスVPCエンドポイントを作成して到達性を確保します。BはSSM Agentがアウトバウンドで接続を開始するため、インバウンド許可は不要です。CはVPCエンドポイント経由で通信すればパブリックIPは不要です。Eの詳細モニタリングはメトリクス間隔の設定であり、SSM登録とは無関係です。",
+      "正解はAとBです。Run Commandは既定ではコンソールにコマンド出力の先頭部分しか表示しませんが、コマンド実行時に出力の送信先としてAmazon S3バケットやAmazon CloudWatch Logsを指定すると、完全な出力を保存できます。CloudWatch Logsに送れば検索やメトリクスフィルタによる分析も可能です。CのCloudTrailはAPI呼び出しの履歴を記録するもので、コマンドが生成したシェル出力の内容は残りません。DのVPCフローログはネットワークトラフィックのメタデータの記録であり、コマンド出力とは無関係です。EのSSMインベントリはソフトウェアや構成のメタデータを収集する機能で、コマンドの実行出力は収集しません。",
     reference:
-      "https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/troubleshooting-managed-instances.html",
+      "https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/sysman-rc-setting-up-cwlogs.html",
   },
   {
     id: "qb-d3-025",
@@ -84,22 +84,22 @@ export const questions = [
   {
     id: "qb-d3-027",
     domain: 3,
-    topic: "State Manager",
+    topic: "Auto Scalingライフサイクルフック",
     type: "single",
     difficulty: "medium",
     question:
-      "ある企業では、今後起動されるものを含むすべてのEC2インスタンスにCloudWatchエージェントがインストールされ、指定した状態で稼働し続けることを保証する必要があります。構成が変更されてしまった場合も、手動操作なしで定期的に元の状態へ是正されるようにしたいと考えています。最も適切な方法はどれですか。",
+      "あるEC2 Auto Scalingグループでは、スケールアウトで新しく起動したインスタンスに対して、サービスインの前に設定処理とウォームアップを完了させたいと考えています。また、スケールインでインスタンスが終了する前には、処理中の接続をドレイン(排出)する時間を確保する必要があります。最も適切な方法はどれですか。",
     choices: [
-      "Run CommandでAWS-ConfigureAWSPackageドキュメントを全インスタンスに一度だけ実行する",
-      "AWS Configルールを作成してエージェントの導入状況を記録する",
-      "各インスタンスのユーザーデータにインストールスクリプトを追加する",
-      "State Managerのアソシエーションを作成し、タグでターゲットを指定してスケジュールに従い適用する",
+      "Auto Scalingグループにライフサイクルフックを設定し、起動時と終了時に一時停止して処理を実行してから次の状態へ進める",
+      "起動テンプレートのユーザーデータで初期化を行い、完了を待たずにインスタンスをサービスインさせる",
+      "ヘルスチェックの猶予期間(グレースピリオド)を延長して、初期化とドレインの時間を確保する",
+      "スケーリングポリシーのクールダウン期間を長く設定して、処理の時間を確保する",
     ],
-    answerIndexes: [3],
+    answerIndexes: [0],
     explanation:
-      "正解はDです。State Managerは、定義した状態をアソシエーションとしてターゲットに継続的に適用する機能です。タグでターゲットを指定すれば後から起動されたインスタンスも自動的に対象となり、スケジュール実行により構成の逸脱も定期的に是正されます。AのRun Commandは1回限りの実行であり、新規インスタンスや構成ドリフトには対応できません。BのAWS Configは評価・記録が主目的で、それだけではインストールという是正は行われません。Cのユーザーデータは初回起動時のみ実行され、既存インスタンスや稼働後の逸脱に対応できません。",
+      "正解はAです。Auto Scalingのライフサイクルフックは、インスタンスの起動時(Pending:Wait)や終了時(Terminating:Wait)に一時停止状態を設け、設定処理やウォームアップ、接続のドレインなどのカスタム処理を実行してから、CompleteLifecycleActionで次の状態へ遷移させられます。Bのユーザーデータだけでは処理の完了を待たずにサービスインし、終了時のドレインも制御できません。Cのヘルスチェックの猶予期間はヘルスチェックの開始を遅らせる設定で、カスタム処理の実行や終了時のドレインを行うものではありません。Dのクールダウンは連続するスケーリング活動の間隔を制御する設定で、個々のインスタンスの準備や終了処理を挟む仕組みではありません。",
     reference:
-      "https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/systems-manager-state.html",
+      "https://docs.aws.amazon.com/ja_jp/autoscaling/ec2/userguide/lifecycle-hooks.html",
   },
   {
     id: "qb-d3-028",
@@ -325,22 +325,22 @@ export const questions = [
   {
     id: "qb-d3-039",
     domain: 3,
-    topic: "ECSデプロイ",
+    topic: "ECSデプロイサーキットブレーカー",
     type: "single",
     difficulty: "medium",
     question:
-      "ある開発チームは、ECRリポジトリへ latest タグでコンテナイメージをプッシュしており、ECSサービス(Fargate)のタスク定義はこのタグを参照しています。新しいイメージをプッシュしましたが、実行中のタスクは古いイメージのまま動作し続けています。新しいイメージでタスクを入れ替える最も簡単な方法はどれですか。",
+      "ある開発チームは、Amazon ECS(Fargate、ローリング更新)のサービスへ新しいタスク定義をデプロイしています。まれに新しいタスクが安定状態に達せずデプロイが停滞することがあり、その場合は手動操作なしで直前の正常なバージョンへ自動的に戻したいと考えています。最も適切な方法はどれですか。",
     choices: [
-      "ECSクラスターを削除して再作成し、サービスを作り直す",
-      "サービスの更新で新しいデプロイの強制(--force-new-deployment)を実行する",
-      "ECRリポジトリでプッシュ時のイメージスキャンを有効化する",
-      "タスク定義のCPUとメモリの設定値を変更して再デプロイを発生させる",
+      "サービスのデプロイサーキットブレーカーを有効化し、ロールバックを有効にする",
+      "サービスの希望タスク数を一時的に増やして、安定するまで待機する",
+      "force-new-deploymentを繰り返し実行して、タスクが安定するまで試行する",
+      "Application Load Balancerのヘルスチェックのしきい値を緩和して、失敗を許容する",
     ],
-    answerIndexes: [1],
+    answerIndexes: [0],
     explanation:
-      "正解はBです。参照するイメージタグが変わらない場合、ECSサービスは自動では再デプロイされません。update-serviceで新しいデプロイを強制すると、デプロイ設定に従ってタスクが置き換えられ、その際にlatestタグの最新イメージがプルされます。Aのクラスター再作成はサービス停止を伴う過剰な操作です。Cのイメージスキャンは脆弱性を検出する機能で、デプロイの実行とは無関係です。Dは新しいタスク定義リビジョンの登録によりデプロイ自体は発生しますが、本来不要なリソース設定の変更を伴うため、最も簡単な方法とは言えません。",
+      "正解はAです。ECSのデプロイサーキットブレーカーは、ローリング更新で新しいタスクが安定状態(steady state)に達せず、タスクの起動やヘルスチェックの失敗が続く場合に、デプロイを失敗と判定します。ロールバックを有効にしておくと、直前に正常完了したデプロイへ自動的に戻すため、手動対応なしで復旧できます。Bの希望タスク数の増加は失敗したタスクを解消せず、自動ロールバックにもなりません。Cのforce-new-deploymentの再実行は同じイメージ・タスク定義では同様に失敗する可能性が高く、根本的な解決になりません。Dのヘルスチェックの緩和は不健全なタスクを見逃す対処であり、問題を隠すだけで要件に反します。",
     reference:
-      "https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/update-service.html",
+      "https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/deployment-circuit-breaker.html",
   },
   {
     id: "qb-d3-040",

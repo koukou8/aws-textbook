@@ -43,42 +43,42 @@ export const questions = [
   {
     id: "qb-d3-003",
     domain: 3,
-    topic: "CloudFormationスタック状態",
+    topic: "CloudFormationリソースインポート",
     type: "single",
     difficulty: "medium",
     question:
-      "ある企業のCloudOpsエンジニアが新規のCloudFormationスタックを作成したところ、リソース作成エラーで失敗し、スタックはROLLBACK_COMPLETE状態になりました。テンプレートの誤りを修正したうえで同じスタックに対して更新を実行しましたが、操作は受け付けられませんでした。修正済みテンプレートをデプロイするにはどうすべきですか。",
+      "ある企業では、以前に手動で作成したAmazon S3バケットとAmazon DynamoDBテーブルを、今後はCloudFormationのInfrastructure as Codeで一元管理したいと考えています。いずれも稼働中のリソースであり、データを保持したまま削除や再作成を伴わずにスタックの管理下へ取り込む必要があります。最も適切な方法はどれですか。",
     choices: [
-      "ROLLBACK_COMPLETE状態のスタックを削除してから、修正済みテンプレートでスタックを作成し直す",
-      "ContinueUpdateRollback操作を実行して、完了後にスタックを更新する",
-      "ドリフト検出を実行して、テンプレートと実リソースの差分を解消してから更新する",
-      "スタックの終了保護を無効化してから更新を再実行する",
+      "対象リソースをテンプレートに定義してDeletionPolicyを付与し、リソースのインポート(IMPORTタイプの変更セット)を実行してスタックに取り込む",
+      "対象リソースを一度削除し、同じ構成のテンプレートでスタックを新規作成して作り直す",
+      "空のスタックを作成後にドリフト検出を実行し、既存リソースを自動的にスタックへ追加する",
+      "StackSetsを使用して、既存リソースを複製したスタックインスタンスを作成する",
     ],
     answerIndexes: [0],
     explanation:
-      "正解はAです。新規作成に失敗してROLLBACK_COMPLETE状態になったスタックは、リソースが残っていない空のスタックであり、この状態から更新することはできません。スタックを削除してから作成をやり直す必要があります。BのContinueUpdateRollbackは、更新のロールバックに失敗したUPDATE_ROLLBACK_FAILED状態のスタックを復旧させる操作で、作成失敗後のスタックには使用できません。Cのドリフト検出は稼働中リソースとテンプレートの差分を検出する機能で、リソースが存在しないため意味がありません。Dの終了保護は削除操作を防ぐ設定であり、更新できない原因とは無関係です。",
+      "正解はAです。CloudFormationのリソースインポートでは、取り込む各リソースをテンプレートに定義してDeletionPolicy属性を付与し、IMPORTタイプの変更セット(インポート操作)を実行することで、リソースを削除・再作成せずに既存リソースをスタックの管理下へ取り込めます。Bは削除と再作成を伴うためデータ損失やダウンタイムが発生し、要件に反します。Cのドリフト検出はテンプレートと実リソースの差分を報告する機能であり、リソースをスタックに追加する機能ではありません。DのStackSetsは複数アカウント・リージョンへ新しいスタックを展開する仕組みで、既存リソースを管理下へ取り込む用途には使えません。",
     reference:
-      "https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
+      "https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/resource-import.html",
   },
   {
     id: "qb-d3-004",
     domain: 3,
-    topic: "CloudFormationドリフト検出",
+    topic: "CloudFormationロールバックトリガー",
     type: "single",
-    difficulty: "easy",
+    difficulty: "medium",
     question:
-      "CloudFormationで管理しているセキュリティグループに、テンプレートに定義されていないインバウンドルールが追加されている疑いがあります。CloudOpsエンジニアは、スタックの管理外で行われた変更をテンプレートの定義と比較して特定したいと考えています。どの機能を使用すべきですか。",
+      "ある企業では、本番CloudFormationスタックの更新後にアプリケーションのエラー率が上昇する事象が時折発生しています。CloudOpsエンジニアは、スタックの更新中および更新直後の一定時間に特定のCloudWatchアラームがALARM状態になった場合、その更新を自動的にロールバックさせたいと考えています。最も適切な方法はどれですか。",
     choices: [
-      "AWS CloudTrailのイベント履歴で変更操作を検索する",
-      "変更セットを作成して差分を確認する",
-      "AWS Configの設定タイムラインで変更履歴を確認する",
-      "スタックのドリフト検出を実行する",
+      "スタック操作のロールバック設定(ロールバックトリガー)で、監視するCloudWatchアラームと監視時間を指定する",
+      "EC2インスタンスのCreationPolicyにCloudWatchアラームを指定し、更新の完了を制御する",
+      "スタックポリシーに、アラーム発生時にリソースの更新を拒否するステートメントを追加する",
+      "更新が失敗した後にContinueUpdateRollbackを実行して、手動でロールバックする",
     ],
-    answerIndexes: [3],
+    answerIndexes: [0],
     explanation:
-      "正解はDです。ドリフト検出を実行すると、スタック内リソースの実際の設定とテンプレートの定義が比較され、スタックの管理外で行われた変更(ドリフト)をリソース単位・プロパティ単位で特定できます。AのCloudTrailは「誰がいつどのAPIを呼び出したか」の調査には有効ですが、テンプレート定義との差分を直接比較する機能ではありません。Bの変更セットは、これから適用する更新の影響を事前確認するためのもので、すでに発生した手動変更は検出できません。CのAWS Configは設定変更の履歴を時系列で追跡できますが、CloudFormationテンプレートとの比較を行うのはドリフト検出の役割です。",
+      "正解はAです。ロールバック設定(ロールバックトリガー)では、スタックの作成・更新時に監視するCloudWatchアラーム(最大5個)と、操作完了後に監視を継続する時間(最大180分)を指定できます。指定したアラームが操作中または監視時間内にALARM状態になると、CloudFormationはスタック操作全体を自動的にロールバックします。BのCreationPolicyはリソース作成時に成功シグナルの受信を待機する属性で、アラームに基づく更新のロールバックには使えません。Cのスタックポリシーは更新から特定リソースを保護する仕組みで、アラームを監視する機能はありません。DのContinueUpdateRollbackはUPDATE_ROLLBACK_FAILED状態からの手動復旧操作であり、自動ロールバックの仕組みではありません。",
     reference:
-      "https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html",
+      "https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/using-cfn-rollback-triggers.html",
   },
   {
     id: "qb-d3-005",
