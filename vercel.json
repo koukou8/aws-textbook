@@ -1,4 +1,7 @@
 {
+  "buildCommand": "echo 'No build step: CSS is pre-built and committed to css/styles.css'",
+  "installCommand": "echo 'No dependencies required for this static site'",
+  "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false
 }
