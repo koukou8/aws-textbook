@@ -276,7 +276,7 @@ export async function initMaterial(materialId) {
 
     const domainBadge =
       domainLabels && chapter.domain != null && domainLabels[chapter.domain]
-        ? `<span class="badge badge-blue">分野${chapter.domain}: ${escapeHtml(domainLabels[chapter.domain])}</span>`
+        ? `<span class="badge badge-blue badge-wrap">分野${chapter.domain}: ${escapeHtml(domainLabels[chapter.domain])}</span>`
         : "";
 
     const sectionsHtml = (chapter.sections ?? [])

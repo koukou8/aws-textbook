@@ -76,7 +76,7 @@ export function renderQuiz(container, opts) {
     const badges = [];
     if (opts.domainLabels && q.domain != null && opts.domainLabels[q.domain]) {
       badges.push(
-        `<span class="badge badge-blue">分野${q.domain}: ${escapeHtml(
+        `<span class="badge badge-blue badge-wrap">分野${q.domain}: ${escapeHtml(
           opts.domainLabels[q.domain]
         )}</span>`
       );
