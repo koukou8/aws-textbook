@@ -12,6 +12,7 @@ import { renderQuiz } from "./quiz-engine.js";
 import {
   escapeHtml,
   icon,
+  initTheme,
   pctText,
   progressBar,
   renderBreadcrumb,
@@ -19,6 +20,7 @@ import {
 } from "./ui.js";
 
 export async function initMaterial(materialId) {
+  initTheme();
   const meta = MATERIALS[materialId];
   const data = await import(`../data/${materialId}/index.js`);
   const chapters = data.chapters ?? [];

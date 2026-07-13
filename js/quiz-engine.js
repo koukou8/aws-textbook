@@ -319,7 +319,7 @@ export function renderQuiz(container, opts) {
                         "w-4 h-4"
                       )}</span>
                     </summary>
-                    <div class="px-4 sm:px-5 pb-4 pt-1 text-[13.5px] space-y-3 bg-[#fafbfb]">
+                    <div class="px-4 sm:px-5 pb-4 pt-1 text-[13.5px] space-y-3 bg-aws-panel-2">
                       <p class="whitespace-pre-line">${escapeHtml(q.question)}</p>
                       <ul class="space-y-1.5">
                         ${q.choices

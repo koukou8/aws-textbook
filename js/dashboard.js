@@ -20,6 +20,7 @@ import {
   downloadText,
   escapeHtml,
   icon,
+  initTheme,
   pctText,
   progressBar,
   renderNavStats,
@@ -33,6 +34,7 @@ const CARD_ICONS = {
 };
 
 export async function initDashboard() {
+  initTheme();
   const [basics, saa, cloudops, quizbank] = await Promise.all([
     import("../data/basics/index.js"),
     import("../data/saa/index.js"),
@@ -57,7 +59,7 @@ export async function initDashboard() {
       <div class="console-container flex flex-col">
         <div class="console-header">
           <div class="flex items-start gap-3">
-            <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-9 h-9 rounded-sm bg-aws-squid text-aws-accent">
+            <span class="icon-chip mt-0.5">
               ${icon(CARD_ICONS[materialId], "w-5 h-5")}
             </span>
             <div class="min-w-0">
@@ -95,7 +97,7 @@ export async function initDashboard() {
       <div class="console-container flex flex-col">
         <div class="console-header">
           <div class="flex items-start gap-3">
-            <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-9 h-9 rounded-sm bg-aws-squid text-aws-accent">
+            <span class="icon-chip mt-0.5">
               ${icon(CARD_ICONS.quizbank, "w-5 h-5")}
             </span>
             <div class="min-w-0">

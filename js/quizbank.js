@@ -18,6 +18,7 @@ import { renderQuiz } from "./quiz-engine.js";
 import {
   escapeHtml,
   icon,
+  initTheme,
   pctText,
   progressBar,
   renderBreadcrumb,
@@ -26,6 +27,7 @@ import {
 } from "./ui.js";
 
 export async function initQuizbank() {
+  initTheme();
   const data = await import("../data/quizbank/index.js");
   const questions = data.questions ?? [];
   const DOMAINS = data.DOMAINS ?? {};
@@ -264,7 +266,7 @@ export async function initQuizbank() {
               (row) => `
             <button type="button" data-mode="domain" data-domain="${row.domain}"
               class="w-full flex items-center gap-3 px-4 sm:px-5 py-3.5 border-t border-aws-border-weak text-left cursor-pointer hover:bg-aws-bg transition-colors">
-              <span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-aws-squid text-white text-[12.5px] font-bold">${row.domain}</span>
+              <span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-lg bg-aws-panel-2 border border-aws-border text-aws-orange text-[12.5px] font-bold tabular">${row.domain}</span>
               <span class="flex-1 min-w-0">
                 <span class="block text-[13.5px] font-medium leading-snug">${escapeHtml(row.label)}</span>
                 <span class="block text-[12px] text-aws-sub mt-0.5">${row.total}問 ・ 解答済み${row.answered} ・ 正答率${pctText(row.accuracy)}</span>

@@ -49,6 +49,8 @@ const ICON_PATHS = {
   target:
     '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  sun: '<circle cx="12" cy="12" r="4.2"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="3.5" y1="12" x2="1" y2="12"/><line x1="23" y1="12" x2="20.5" y2="12"/><line x1="5.6" y1="5.6" x2="3.8" y2="3.8"/><line x1="20.2" y1="20.2" x2="18.4" y2="18.4"/><line x1="18.4" y1="5.6" x2="20.2" y2="3.8"/><line x1="3.8" y1="20.2" x2="5.6" y2="18.4"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
 };
 
 // stroke ベースのインラインSVGアイコンを返す
@@ -73,11 +75,73 @@ export function renderNavStats(stats) {
   const target = document.getElementById("nav-stats");
   if (!target) return;
   target.innerHTML = `
-    <span class="hidden sm:inline text-[#95a5a6]">全体正答率</span>
-    <span class="font-bold text-white">${pctText(stats.accuracy)}</span>
-    <span class="mx-1.5 text-[#414d5c]">|</span>
-    <span class="hidden sm:inline text-[#95a5a6]">総回答</span>
-    <span class="font-bold text-white">${stats.totalAnswered}<span class="font-normal text-[#95a5a6]">問</span></span>`;
+    <span class="nav-stat">
+      <span class="nav-stat-label hidden sm:inline">正答率</span>
+      <span class="nav-stat-value">${pctText(stats.accuracy)}</span>
+    </span>
+    <span class="nav-sep"></span>
+    <span class="nav-stat">
+      <span class="nav-stat-label hidden sm:inline">総回答</span>
+      <span class="nav-stat-value">${stats.totalAnswered}</span>
+      <span class="nav-stat-label">問</span>
+    </span>`;
+}
+
+// ---- テーマ(ライト/ダーク)----
+const THEME_KEY = "aws-textbook:theme";
+
+export function storedTheme() {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return t === "dark" || t === "light" ? t : null;
+  } catch {
+    return null;
+  }
+}
+
+export function systemTheme() {
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+export function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+}
+
+// トグルボタンの初期化(全ページのinitから呼ぶ)。保存値→OS設定の順で決定する。
+export function initTheme() {
+  if (!document.documentElement.dataset.theme) {
+    applyTheme(storedTheme() ?? systemTheme());
+  }
+  const btn = document.getElementById("theme-toggle");
+  const paint = () => {
+    if (!btn) return;
+    const dark = document.documentElement.dataset.theme === "dark";
+    btn.innerHTML = icon(dark ? "sun" : "moon", "w-[18px] h-[18px]");
+    const label = dark ? "ライトモードに切り替え" : "ダークモードに切り替え";
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+  };
+  paint();
+  btn?.addEventListener("click", () => {
+    const next =
+      document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    applyTheme(next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {}
+    paint();
+  });
+  // ユーザーが明示選択していなければ、OSのテーマ変更に追従する
+  window
+    .matchMedia?.("(prefers-color-scheme: dark)")
+    .addEventListener?.("change", (e) => {
+      if (!storedTheme()) {
+        applyTheme(e.matches ? "dark" : "light");
+        paint();
+      }
+    });
 }
 
 // パンくずリストを描画する

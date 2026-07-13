@@ -6,18 +6,32 @@
   <meta name="description" content="AWSの主要サービスを体系的に学べる基礎教材。">
   <title>AWS基礎 | AWS Study Console</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23232F3E'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='bold' text-anchor='middle' fill='%23FF9900' font-family='sans-serif'%3EA%3C/text%3E%3C/svg%3E">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("aws-textbook:theme");
+        if (t !== "dark" && t !== "light") {
+          t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="min-h-screen flex flex-col">
-  <header class="fixed top-0 inset-x-0 z-40 h-12 bg-aws-squid text-white flex items-center px-4 gap-3 shadow-md">
-    <a href="index.html" class="flex items-center gap-2 font-bold text-[14.5px] shrink-0 text-white no-underline">
-      <span class="inline-flex items-center justify-center rounded-sm bg-aws-accent text-aws-squid text-[11px] font-black px-1.5 py-1 leading-none">AWS</span>
-      <span>Study Console</span>
+  <header class="app-header">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">AWS</span>
+      <span class="brand-name">Study <b>Console</b></span>
     </a>
-    <div id="nav-stats" class="ml-auto text-[12px] whitespace-nowrap"></div>
+    <div class="app-header-right">
+      <div id="nav-stats" class="nav-stats"></div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="テーマ切り替え"></button>
+    </div>
   </header>
 
-  <div class="flex-1 w-full max-w-7xl mx-auto px-4 pt-12">
+  <div class="flex-1 w-full max-w-7xl mx-auto px-4 pt-14">
     <div id="breadcrumb" class="py-3 text-[12.5px]" aria-label="パンくずリスト"></div>
     <div class="flex gap-5 items-start pb-10">
       <aside id="sidenav" class="hidden lg:block w-72 shrink-0 console-container sticky top-16 max-h-[calc(100vh-5rem)] overflow-y-auto" aria-label="章ナビゲーション"></aside>
@@ -37,9 +51,9 @@
   </div>
 
   <div id="drawer-overlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden"></div>
-  <aside id="drawer" class="fixed top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-white z-50 shadow-xl -translate-x-full transition-transform duration-200 flex flex-col lg:hidden" aria-label="章ナビゲーション(ドロワー)"></aside>
+  <aside id="drawer" class="fixed top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-aws-panel z-50 shadow-xl -translate-x-full transition-transform duration-200 flex flex-col lg:hidden" aria-label="章ナビゲーション(ドロワー)"></aside>
 
-  <footer class="border-t border-aws-border bg-white">
+  <footer class="border-t border-aws-border bg-aws-panel">
     <div class="max-w-5xl mx-auto px-4 py-5 text-[11.5px] text-aws-sub leading-relaxed">
       <p>本サイトは個人学習用の非公式教材です。AWSおよび関連するすべての商標はAmazon.com, Inc.またはその関連会社の商標です。</p>
       <p>掲載内容は作成時点の情報に基づきます。最新の仕様は<a class="link" href="https://docs.aws.amazon.com/" target="_blank" rel="noopener noreferrer">AWS公式ドキュメント</a>を確認してください。</p>
