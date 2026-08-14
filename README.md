@@ -1,6 +1,6 @@
 # AWS Study Console — AWS資格対策 学習Webアプリ
 
-AWS認定資格 **SAA-C03 (Solutions Architect – Associate)** / **SOA-C03 (CloudOps Engineer – Associate)** の学習用Webアプリです。教材(AWS基礎 / SAA / CloudOps)と、SOA-C03向けの演習問題集を収録しています。
+AWS認定資格 **SAA-C03 (Solutions Architect – Associate)** / **SOA-C03 (CloudOps Engineer – Associate)** / **AIF-C01 (AI Practitioner)** の学習用Webアプリです。教材(AWS基礎 / SAA / CloudOps / AI Practitioner)と、SOA-C03・AIF-C01向けの演習問題集を収録しています。
 
 - フレームワーク不使用(HTML + Tailwind CSS + Vanilla JavaScript / ES Modules)
 - バックエンドなし。進捗はすべてブラウザの localStorage に保存
@@ -16,10 +16,12 @@ AWS認定資格 **SAA-C03 (Solutions Architect – Associate)** / **SOA-C03 (Clo
 | AWS基礎 | 12章 | 章末確認問題 71問 |
 | SAA対策教材(SAA-C03) | 4分野 11章 | 章末確認問題 110問 |
 | CloudOps対策教材(SOA-C03) | 5分野 13章 | 章末確認問題 123問 |
+| AI Practitioner対策教材(AIF-C01) | 5分野 14章 | 章末確認問題 140問 |
 | CloudOps問題集(SOA-C03) | — | 演習 200問(分野比率 44/44/44/32/36) |
-| **合計** | **36章** | **504問** |
+| AI Practitioner問題集(AIF-C01) | — | 演習 200問(分野比率 40/48/56/28/28) |
+| **合計** | **50章** | **844問** |
 
-すべての問題に解説(誤答の理由を含む)とAWS公式ドキュメントの参照リンクを付けています。試験分野の比率は各試験の公式試験ガイド(2026年7月時点、`docs/research/` に調査結果を収録)に準拠しています。
+すべての問題に解説(誤答の理由を含む)とAWS公式ドキュメントの参照リンクを付けています。試験分野の比率は各試験の公式試験ガイド(2026年7〜8月時点、`docs/research/` に調査結果を収録)に準拠しています。
 
 ## セットアップ
 
@@ -62,7 +64,9 @@ aws-textbook/
 ├── basics.html           # AWS基礎教材
 ├── saa.html              # SAA対策教材
 ├── cloudops.html         # CloudOps対策教材
+├── aif.html              # AI Practitioner対策教材
 ├── quiz.html             # CloudOps問題集
+├── aif-quiz.html         # AI Practitioner問題集
 ├── css/
 │   ├── input.css         # Tailwind 入力(デザイントークン定義)
 │   └── styles.css        # ビルド出力(コミット済み)
@@ -79,7 +83,9 @@ aws-textbook/
 │   ├── basics/           # AWS基礎(content-*.js / questions-*.js / index.js)
 │   ├── saa/              # SAA教材(分野別 content-d*.js / questions-d*.js)
 │   ├── cloudops/         # CloudOps教材(分野別)
-│   └── quizbank/         # CloudOps問題集(分野別 d*-a.js / d*-b.js)
+│   ├── aif/              # AI Practitioner教材(分野別)
+│   ├── quizbank/         # CloudOps問題集(分野別 d*-a.js / d*-b.js)
+│   └── aifbank/          # AI Practitioner問題集(分野別 d*-a.js / d*-b.js)
 ├── docs/research/        # 試験ガイド・出題傾向の調査結果
 ├── scripts/validate.js   # データ検証スクリプト
 ├── package.json

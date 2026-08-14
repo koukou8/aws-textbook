@@ -179,13 +179,11 @@ async function importData(relPath) {
 async function validateSingleFile(relPath) {
   console.log(`単一ファイル検証: ${relPath}\n`);
   const mod = await importData(relPath);
-  const requireDomain = relPath.includes("quizbank")
+  const requireDomain = /quizbank|aifbank|cloudops|aif/.test(relPath)
     ? [1, 2, 3, 4, 5]
-    : relPath.includes("cloudops")
-      ? [1, 2, 3, 4, 5]
-      : relPath.includes("saa")
-        ? [1, 2, 3, 4]
-        : null;
+    : relPath.includes("saa")
+      ? [1, 2, 3, 4]
+      : null;
 
   if (Array.isArray(mod.questions)) {
     const ids = mod.questions.map((q, i) => ({
@@ -224,13 +222,17 @@ async function validateAll() {
   const basics = await importData("data/basics/index.js");
   const saa = await importData("data/saa/index.js");
   const cloudops = await importData("data/cloudops/index.js");
+  const aif = await importData("data/aif/index.js");
   const quizbank = await importData("data/quizbank/index.js");
+  const aifbank = await importData("data/aifbank/index.js");
 
   const datasets = [
     { name: "basics", data: basics, domains: null, isMaterial: true },
     { name: "saa", data: saa, domains: [1, 2, 3, 4], isMaterial: true },
     { name: "cloudops", data: cloudops, domains: [1, 2, 3, 4, 5], isMaterial: true },
+    { name: "aif", data: aif, domains: [1, 2, 3, 4, 5], isMaterial: true },
     { name: "quizbank", data: quizbank, domains: [1, 2, 3, 4, 5], isMaterial: false },
+    { name: "aifbank", data: aifbank, domains: [1, 2, 3, 4, 5], isMaterial: false },
   ];
 
   // ID重複はデータ横断でチェック
@@ -295,13 +297,18 @@ async function validateAll() {
   }
 
   // 目標値チェック
-  const quizbankCount = (quizbank.questions ?? []).length;
-  if (quizbankCount > 0 && quizbankCount < 200) {
-    warn("quizbank", `問題数が目標(200問)未満です: ${quizbankCount}問`);
+  for (const [name, mod] of [
+    ["quizbank", quizbank],
+    ["aifbank", aifbank],
+  ]) {
+    const count = (mod.questions ?? []).length;
+    if (count > 0 && count < 200) {
+      warn(name, `問題数が目標(200問)未満です: ${count}問`);
+    }
   }
   console.log(`総問題数(全データセット合計): ${totalQuestions}`);
-  if (totalQuestions > 0 && totalQuestions < 450) {
-    warn("全体", `総問題数が目標(450問)未満です: ${totalQuestions}問`);
+  if (totalQuestions > 0 && totalQuestions < 800) {
+    warn("全体", `総問題数が目標(800問)未満です: ${totalQuestions}問`);
   }
 }
 

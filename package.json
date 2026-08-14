@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "AWS認定資格(SAA-C03 / SOA-C03)学習用Webアプリ",
+  "description": "AWS認定資格(SAA-C03 / SOA-C03 / AIF-C01)学習用Webアプリ",
   "scripts": {
     "build": "tailwindcss -i ./css/input.css -o ./css/styles.css --minify",
     "watch": "tailwindcss -i ./css/input.css -o ./css/styles.css --watch",

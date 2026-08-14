@@ -1,7 +1,7 @@
 // ダッシュボード(index.html)
-// 4カード表示・全体サマリー・進捗の管理(リセット / エクスポート / インポート)を担う。
+// 教材・問題集カード表示・全体サマリー・進捗の管理(リセット / エクスポート / インポート)を担う。
 
-import { MATERIALS, QUIZBANK_META } from "./config.js";
+import { MATERIALS, QUIZBANKS } from "./config.js";
 import {
   exportStateJSON,
   importStateJSON,
@@ -30,18 +30,27 @@ const CARD_ICONS = {
   basics: "book",
   saa: "layers",
   cloudops: "gear",
+  aif: "target",
   quizbank: "clipboard",
+  aifbank: "clipboard",
 };
 
 export async function initDashboard() {
   initTheme();
-  const [basics, saa, cloudops, quizbank] = await Promise.all([
-    import("../data/basics/index.js"),
-    import("../data/saa/index.js"),
-    import("../data/cloudops/index.js"),
-    import("../data/quizbank/index.js"),
+  const materialIds = Object.keys(MATERIALS);
+  const bankIds = Object.keys(QUIZBANKS);
+  const [materialModules, bankModules] = await Promise.all([
+    Promise.all(materialIds.map((id) => import(`../data/${id}/index.js`))),
+    Promise.all(
+      bankIds.map((id) => import(`../data/${QUIZBANKS[id].dataDir}/index.js`))
+    ),
   ]);
-  const materialsData = { basics, saa, cloudops };
+  const materialsData = Object.fromEntries(
+    materialIds.map((id, i) => [id, materialModules[i]])
+  );
+  const banksData = Object.fromEntries(
+    bankIds.map((id, i) => [id, bankModules[i]])
+  );
 
   const summaryEl = document.getElementById("overall-summary");
   const cardsEl = document.getElementById("material-cards");
@@ -88,17 +97,17 @@ export async function initDashboard() {
       </div>`;
   }
 
-  function quizbankCardHtml() {
-    const meta = QUIZBANK_META;
-    const questions = quizbank.questions ?? [];
-    const prog = quizbankProgress(loadState(), questions);
+  function quizbankCardHtml(bankId) {
+    const meta = QUIZBANKS[bankId];
+    const questions = banksData[bankId].questions ?? [];
+    const prog = quizbankProgress(loadState(), questions, bankId);
     const resumeHref = prog.hasSession ? `${meta.page}?resume=1` : meta.page;
     return `
       <div class="console-container flex flex-col">
         <div class="console-header">
           <div class="flex items-start gap-3">
             <span class="icon-chip mt-0.5">
-              ${icon(CARD_ICONS.quizbank, "w-5 h-5")}
+              ${icon(CARD_ICONS[bankId], "w-5 h-5")}
             </span>
             <div class="min-w-0">
               <h3 class="console-title">${escapeHtml(meta.title)}</h3>
@@ -162,8 +171,8 @@ export async function initDashboard() {
 
   function renderCards() {
     cardsEl.innerHTML =
-      ["basics", "saa", "cloudops"].map(materialCardHtml).join("") +
-      quizbankCardHtml();
+      materialIds.map(materialCardHtml).join("") +
+      bankIds.map(quizbankCardHtml).join("");
   }
 
   function renderManagement() {
@@ -189,7 +198,7 @@ export async function initDashboard() {
           <div>
             <p class="text-[13px] font-bold mb-2">進捗のリセット</p>
             <div class="flex flex-wrap gap-2.5">
-              ${["basics", "saa", "cloudops"]
+              ${materialIds
                 .map(
                   (id) =>
                     `<button type="button" class="btn btn-secondary btn-sm" data-manage="reset-material" data-material="${id}">${escapeHtml(
@@ -197,7 +206,14 @@ export async function initDashboard() {
                     )}をリセット</button>`
                 )
                 .join("")}
-              <button type="button" class="btn btn-secondary btn-sm" data-manage="reset-quizbank">問題集をリセット</button>
+              ${bankIds
+                .map(
+                  (id) =>
+                    `<button type="button" class="btn btn-secondary btn-sm" data-manage="reset-quizbank" data-bank="${id}">${escapeHtml(
+                      QUIZBANKS[id].title
+                    )}をリセット</button>`
+                )
+                .join("")}
               <button type="button" class="btn btn-danger btn-sm" data-manage="reset-all">
                 ${icon("trash", "w-4 h-4")}すべての進捗をリセット
               </button>
@@ -230,12 +246,13 @@ export async function initDashboard() {
           rerender();
         }
       } else if (action === "reset-quizbank") {
+        const bankId = btn.dataset.bank;
         if (
           confirm(
-            "「CloudOps問題集」の進捗(解答履歴・ブックマーク・中断中セッション)をリセットします。よろしいですか?"
+            `「${QUIZBANKS[bankId].title}」の進捗(解答履歴・ブックマーク・中断中セッション)をリセットします。よろしいですか?`
           )
         ) {
-          resetQuizbank();
+          resetQuizbank(bankId);
           rerender();
         }
       } else if (action === "reset-all") {

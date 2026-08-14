@@ -1,7 +1,9 @@
-// CloudOps問題集ページ(quiz.html)
+// 問題集ページ共通ロジック(quiz.html / aif-quiz.html)
 // モード選択(全問順次 / 分野別 / ランダム10問 / 復習 / ブックマーク)と
 // セッションの保存・再開を担う。クイズUI本体は quiz-engine.js を使う。
+// bankId で対象の問題集(js/config.js の QUIZBANKS)を切り替える。
 
+import { QUIZBANKS } from "./config.js";
 import {
   loadState,
   updateState,
@@ -26,9 +28,10 @@ import {
   shuffled,
 } from "./ui.js";
 
-export async function initQuizbank() {
+export async function initQuizbank(bankId = "quizbank") {
   initTheme();
-  const data = await import("../data/quizbank/index.js");
+  const meta = QUIZBANKS[bankId];
+  const data = await import(`../data/${meta.dataDir}/index.js`);
   const questions = data.questions ?? [];
   const DOMAINS = data.DOMAINS ?? {};
   const domainLabels = Object.fromEntries(
@@ -40,7 +43,7 @@ export async function initQuizbank() {
   renderNavStats(overallStats(loadState()));
   renderBreadcrumb([
     { label: "ホーム", href: "index.html" },
-    { label: "CloudOps問題集" },
+    { label: meta.title },
   ]);
 
   if (questions.length === 0) {
@@ -54,13 +57,13 @@ export async function initQuizbank() {
   // ---- セッション管理 ----
   function saveSession(session) {
     updateState((s) => {
-      s.quizbank.session = session;
+      s[bankId].session = session;
     });
   }
 
   function clearSession() {
     updateState((s) => {
-      s.quizbank.session = null;
+      s[bankId].session = null;
     });
   }
 
@@ -79,10 +82,10 @@ export async function initQuizbank() {
       ids = shuffled(questions).slice(0, 10).map((q) => q.id);
       label = "ランダム10問";
     } else if (mode === "review") {
-      ids = shuffled(wrongQuestions(state, questions)).map((q) => q.id);
+      ids = shuffled(wrongQuestions(state, questions, bankId)).map((q) => q.id);
       label = "復習(間違えた問題)";
     } else if (mode === "bookmark") {
-      ids = bookmarkedQuestions(state, questions).map((q) => q.id);
+      ids = bookmarkedQuestions(state, questions, bankId).map((q) => q.id);
       label = "ブックマーク";
     }
 
@@ -122,12 +125,12 @@ export async function initQuizbank() {
       bookmarkable: true,
       initial: { answers: session.answers },
       isBookmarked(qid) {
-        return loadState().quizbank.history?.[qid]?.bookmarked === true;
+        return loadState()[bankId].history?.[qid]?.bookmarked === true;
       },
       onToggleBookmark(qid) {
         let next = false;
         updateState((s) => {
-          const rec = s.quizbank.history[qid] ?? {
+          const rec = s[bankId].history[qid] ?? {
             attempts: 0,
             correct: 0,
             lastCorrect: null,
@@ -136,13 +139,13 @@ export async function initQuizbank() {
           };
           rec.bookmarked = !rec.bookmarked;
           next = rec.bookmarked;
-          s.quizbank.history[qid] = rec;
+          s[bankId].history[qid] = rec;
         });
         return next;
       },
       onAnswer(question, selected, isCorrect) {
         updateState((s) => {
-          const rec = s.quizbank.history[question.id] ?? {
+          const rec = s[bankId].history[question.id] ?? {
             attempts: 0,
             correct: 0,
             lastCorrect: null,
@@ -153,15 +156,15 @@ export async function initQuizbank() {
           if (isCorrect) rec.correct += 1;
           rec.lastCorrect = isCorrect;
           rec.lastAnsweredAt = new Date().toISOString();
-          s.quizbank.history[question.id] = rec;
+          s[bankId].history[question.id] = rec;
           recordStudyToday(s);
         });
       },
       onProgress(answers) {
         updateState((s) => {
-          if (!s.quizbank.session) return;
-          s.quizbank.session.answers = answers;
-          s.quizbank.session.updatedAt = new Date().toISOString();
+          if (!s[bankId].session) return;
+          s[bankId].session.answers = answers;
+          s[bankId].session.updatedAt = new Date().toISOString();
         });
       },
       onFinish() {
@@ -180,11 +183,11 @@ export async function initQuizbank() {
   // ---- モード選択画面 ----
   function renderModeSelect() {
     const state = loadState();
-    const prog = quizbankProgress(state, questions);
-    const session = state.quizbank.session;
-    const wrongCount = wrongQuestions(state, questions).length;
-    const bookmarkCount = bookmarkedQuestions(state, questions).length;
-    const domainRows = quizbankDomainStats(state, questions, DOMAINS);
+    const prog = quizbankProgress(state, questions, bankId);
+    const session = state[bankId].session;
+    const wrongCount = wrongQuestions(state, questions, bankId).length;
+    const bookmarkCount = bookmarkedQuestions(state, questions, bankId).length;
+    const domainRows = quizbankDomainStats(state, questions, DOMAINS, bankId);
 
     const resumeBanner = session
       ? `<div class="console-container mb-5 border-l-4 !border-l-aws-accent">
@@ -258,7 +261,7 @@ export async function initQuizbank() {
       <div class="console-container">
         <div class="console-header">
           <h2 class="console-title text-[14px]">分野別演習</h2>
-          <p class="console-desc">SOA-C03の出題分野ごとに集中して演習します。</p>
+          <p class="console-desc">${escapeHtml(meta.examLabel)}の出題分野ごとに集中して演習します。</p>
         </div>
         <div>
           ${domainRows
@@ -282,7 +285,7 @@ export async function initQuizbank() {
       el.addEventListener("click", () => {
         const mode = el.dataset.mode;
         if (mode === "resume") {
-          const current = loadState().quizbank.session;
+          const current = loadState()[bankId].session;
           if (current) runQuiz(current);
         } else if (mode === "discard") {
           if (confirm("中断中のセッションを破棄します。よろしいですか?(解答済みの履歴は残ります)")) {
@@ -300,7 +303,7 @@ export async function initQuizbank() {
 
   // ---- 初期表示(?resume=1 なら自動再開) ----
   const params = new URLSearchParams(location.search);
-  const session = loadState().quizbank.session;
+  const session = loadState()[bankId].session;
   if (params.get("resume") === "1" && session) {
     runQuiz(session);
   } else {

@@ -1,6 +1,8 @@
 // 進捗計算ロジック。state(localStorage)とコンテンツデータから
 // ダッシュボードや各ページに表示する数値を導出する。
 
+import { BANK_KEYS } from "./storage.js";
+
 // 教材の進捗: 完了章数ベース + 章末確認問題の累計正答率
 export function materialProgress(state, materialId, chapters) {
   const m = state.materials[materialId] ?? {
@@ -35,8 +37,8 @@ export function materialProgress(state, materialId, chapters) {
 }
 
 // 問題集の進捗: 一度でも解答した問題数ベース + 累計正答率
-export function quizbankProgress(state, questions) {
-  const history = state.quizbank.history ?? {};
+export function quizbankProgress(state, questions, bankId = "quizbank") {
+  const history = state[bankId]?.history ?? {};
   let answered = 0;
   let attempts = 0;
   let correct = 0;
@@ -58,13 +60,13 @@ export function quizbankProgress(state, questions) {
     attempts,
     correct,
     accuracy: attempts > 0 ? correct / attempts : null,
-    hasSession: Boolean(state.quizbank.session),
+    hasSession: Boolean(state[bankId]?.session),
   };
 }
 
 // 問題集の分野別統計
-export function quizbankDomainStats(state, questions, domains) {
-  const history = state.quizbank.history ?? {};
+export function quizbankDomainStats(state, questions, domains, bankId = "quizbank") {
+  const history = state[bankId]?.history ?? {};
   const rows = [];
   for (const [num, def] of Object.entries(domains)) {
     const domainNumber = Number(num);
@@ -91,7 +93,7 @@ export function quizbankDomainStats(state, questions, domains) {
   return rows;
 }
 
-// 全体サマリー(総回答数・全体正答率・学習日数)。教材+問題集の延べ回答を合算する。
+// 全体サマリー(総回答数・全体正答率・学習日数)。教材+全問題集の延べ回答を合算する。
 export function overallStats(state) {
   let total = 0;
   let correct = 0;
@@ -101,9 +103,11 @@ export function overallStats(state) {
       correct += result?.sumCorrect ?? 0;
     }
   }
-  for (const rec of Object.values(state.quizbank?.history ?? {})) {
-    total += rec?.attempts ?? 0;
-    correct += rec?.correct ?? 0;
+  for (const bankId of BANK_KEYS) {
+    for (const rec of Object.values(state[bankId]?.history ?? {})) {
+      total += rec?.attempts ?? 0;
+      correct += rec?.correct ?? 0;
+    }
   }
   return {
     totalAnswered: total,
@@ -114,13 +118,13 @@ export function overallStats(state) {
 }
 
 // 復習モード対象: 最後の解答が不正解だった問題
-export function wrongQuestions(state, questions) {
-  const history = state.quizbank.history ?? {};
+export function wrongQuestions(state, questions, bankId = "quizbank") {
+  const history = state[bankId]?.history ?? {};
   return questions.filter((q) => history[q.id]?.lastCorrect === false);
 }
 
 // ブックマーク済みの問題
-export function bookmarkedQuestions(state, questions) {
-  const history = state.quizbank.history ?? {};
+export function bookmarkedQuestions(state, questions, bankId = "quizbank") {
+  const history = state[bankId]?.history ?? {};
   return questions.filter((q) => history[q.id]?.bookmarked === true);
 }

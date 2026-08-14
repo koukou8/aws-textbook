@@ -13,24 +13,36 @@ function defaultMaterialState() {
   };
 }
 
-export function defaultState() {
+// 問題集(quizbank / aifbank)ごとの進捗のデフォルト
+function defaultBankState() {
   return {
+    // 問題ID => { attempts, correct, lastCorrect, bookmarked, lastAnsweredAt }
+    history: {},
+    // 中断中セッション: { mode, label, domain, questionIds, index, answers, startedAt, updatedAt }
+    session: null,
+  };
+}
+
+// 問題集のstateキー一覧(js/config.js の QUIZBANKS のidと対応)
+export const BANK_KEYS = ["quizbank", "aifbank"];
+
+export function defaultState() {
+  const state = {
     version: CURRENT_VERSION,
     materials: {
       basics: defaultMaterialState(),
       saa: defaultMaterialState(),
       cloudops: defaultMaterialState(),
-    },
-    quizbank: {
-      // 問題ID => { attempts, correct, lastCorrect, bookmarked, lastAnsweredAt }
-      history: {},
-      // 中断中セッション: { mode, label, domain, questionIds, index, answers, startedAt, updatedAt }
-      session: null,
+      aif: defaultMaterialState(),
     },
     stats: {
       studyDates: [],
     },
   };
+  for (const key of BANK_KEYS) {
+    state[key] = defaultBankState();
+  }
+  return state;
 }
 
 // スキーマ変更時は { 2: (state) => next } の形でマイグレーション関数を追加する
@@ -57,7 +69,6 @@ function mergeWithDefault(state) {
     ...state,
     version: CURRENT_VERSION,
     materials: { ...def.materials },
-    quizbank: { ...def.quizbank, ...(state.quizbank ?? {}) },
     stats: { ...def.stats, ...(state.stats ?? {}) },
   };
   for (const key of Object.keys(def.materials)) {
@@ -66,10 +77,13 @@ function mergeWithDefault(state) {
       ...(state.materials?.[key] ?? {}),
     };
   }
-  if (!Array.isArray(merged.stats.studyDates)) merged.stats.studyDates = [];
-  if (!merged.quizbank.history || typeof merged.quizbank.history !== "object") {
-    merged.quizbank.history = {};
+  for (const key of BANK_KEYS) {
+    merged[key] = { ...defaultBankState(), ...(state[key] ?? {}) };
+    if (!merged[key].history || typeof merged[key].history !== "object") {
+      merged[key].history = {};
+    }
   }
+  if (!Array.isArray(merged.stats.studyDates)) merged.stats.studyDates = [];
   return merged;
 }
 
@@ -122,9 +136,9 @@ export function resetMaterial(materialId) {
   });
 }
 
-export function resetQuizbank() {
+export function resetQuizbank(bankId = "quizbank") {
   return updateState((s) => {
-    s.quizbank = { history: {}, session: null };
+    s[bankId] = defaultBankState();
   });
 }
 
