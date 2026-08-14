@@ -145,6 +145,117 @@ function checkChapter(ch, where, questionIds) {
   }
 }
 
+// 特設ページ(data/topics/<id>.js の export const topic)の検証
+function checkTopic(t, where) {
+  if (!t || typeof t !== "object") {
+    err(where, "topic がオブジェクトではありません");
+    return;
+  }
+  const w = `${where} ${t.id ?? "(idなし)"}`;
+  if (typeof t.id !== "string" || !/^[a-z0-9][a-z0-9-]*$/.test(t.id)) {
+    err(w, `id が不正です(小文字英数字とハイフンのみ): ${t.id}`);
+  }
+  if (typeof t.title !== "string" || t.title.trim() === "") {
+    err(w, "title が空です");
+  }
+  if (typeof t.description !== "string" || t.description.trim().length < 20) {
+    err(w, "description が短すぎるか空です(20字以上)");
+  }
+  if (t.exam != null && (typeof t.exam !== "string" || t.exam.trim() === "")) {
+    err(w, "exam は null か空でない文字列にしてください");
+  }
+  if (!Array.isArray(t.services) || t.services.length === 0) {
+    err(w, "services(主要サービス・キーワードの配列)が空です");
+  } else {
+    t.services.forEach((s, i) => {
+      if (typeof s !== "string" || s.trim() === "") {
+        err(w, `services[${i}] が空です`);
+      }
+    });
+  }
+  if (typeof t.createdAt !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(t.createdAt)) {
+    err(w, `createdAt は YYYY-MM-DD 形式にしてください: ${t.createdAt}`);
+  }
+  if (t.source != null) {
+    if (typeof t.source !== "object") {
+      err(w, "source はオブジェクトか null にしてください");
+    } else {
+      if (typeof t.source.question !== "string" || t.source.question.trim().length < 20) {
+        err(w, "source.question(問題の要約)が短すぎます(20字以上)");
+      }
+      if (typeof t.source.point !== "string" || t.source.point.trim().length < 15) {
+        err(w, "source.point(決め手)が短すぎます(15字以上)");
+      }
+    }
+  }
+  if (!Array.isArray(t.sections) || t.sections.length < 2) {
+    err(w, `sections は2個以上必要です(実際: ${Array.isArray(t.sections) ? t.sections.length : "配列でない"})`);
+  } else {
+    t.sections.forEach((sec, i) => {
+      if (typeof sec.heading !== "string" || sec.heading.trim() === "") {
+        err(w, `sections[${i}].heading が空です`);
+      }
+      if (typeof sec.html !== "string" || sec.html.trim().length < 100) {
+        err(w, `sections[${i}].html が短すぎるか空です(100字以上)`);
+      }
+      for (const tag of ["script", "style", "img"]) {
+        if (new RegExp(`<${tag}`, "i").test(sec.html ?? "")) {
+          err(w, `sections[${i}].html に <${tag}> タグが含まれています(使用禁止)`);
+        }
+      }
+    });
+  }
+  if (!Array.isArray(t.references) || t.references.length === 0) {
+    warn(w, "references(参考リンク)がありません");
+  } else {
+    t.references.forEach((ref, i) => {
+      if (typeof ref?.label !== "string" || ref.label.trim() === "") {
+        err(w, `references[${i}].label が空です`);
+      }
+      if (typeof ref?.url !== "string" || !/^https:\/\//.test(ref.url)) {
+        err(w, `references[${i}].url がURL形式ではありません: ${ref?.url}`);
+      }
+    });
+  }
+}
+
+// 特設ページのレジストリ(data/topics/index.js)と各ページの整合を検証
+async function validateTopics() {
+  let registry;
+  try {
+    registry = await importData("data/topics/index.js");
+  } catch {
+    return { count: 0 }; // レジストリ未作成なら特設ページなしとして扱う
+  }
+  const ids = registry.topicIds ?? [];
+  if (!Array.isArray(ids)) {
+    err("topics", "topicIds が配列ではありません");
+    return { count: 0 };
+  }
+  const seen = new Set();
+  for (const id of ids) {
+    if (seen.has(id)) {
+      err("topics", `topicIds に ${id} が重複しています`);
+      continue;
+    }
+    seen.add(id);
+    try {
+      const mod = await importData(`data/topics/${id}.js`);
+      if (!mod.topic) {
+        err(`topics/${id}`, "topic がエクスポートされていません");
+        continue;
+      }
+      checkTopic(mod.topic, "topics");
+      if (mod.topic.id !== id) {
+        err(`topics/${id}`, `topic.id(${mod.topic.id})がファイル名と一致しません`);
+      }
+    } catch (e) {
+      err(`topics/${id}`, `読み込みに失敗しました: ${e.message}`);
+    }
+  }
+  return { count: ids.length };
+}
+
 function checkGlobalIdUniqueness(entries) {
   const seen = new Map();
   for (const { id, where } of entries) {
@@ -212,8 +323,25 @@ async function validateSingleFile(relPath) {
     mod.chapters.forEach((c) => checkChapter(c, relPath, null));
     console.log(`章数: ${mod.chapters.length}`);
   }
-  if (!Array.isArray(mod.questions) && !Array.isArray(mod.chapters)) {
-    err(relPath, "questions / chapters のどちらもエクスポートされていません");
+  if (mod.topic) {
+    checkTopic(mod.topic, relPath);
+    const fileId = path.basename(relPath, ".js");
+    if (mod.topic.id !== fileId && fileId !== "index") {
+      err(relPath, `topic.id(${mod.topic.id})がファイル名(${fileId})と一致しません`);
+    }
+    console.log(`特設ページ: ${mod.topic.title ?? "(タイトルなし)"}`);
+    console.log(`セクション数: ${mod.topic.sections?.length ?? 0}`);
+  }
+  if (Array.isArray(mod.topicIds)) {
+    console.log(`特設ページレジストリ: ${mod.topicIds.length}件`);
+  }
+  if (
+    !Array.isArray(mod.questions) &&
+    !Array.isArray(mod.chapters) &&
+    !mod.topic &&
+    !Array.isArray(mod.topicIds)
+  ) {
+    err(relPath, "questions / chapters / topic のいずれもエクスポートされていません");
   }
 }
 
@@ -310,6 +438,9 @@ async function validateAll() {
   if (totalQuestions > 0 && totalQuestions < 800) {
     warn("全体", `総問題数が目標(800問)未満です: ${totalQuestions}問`);
   }
+
+  const topicsResult = await validateTopics();
+  console.log(`特設ページ数: ${topicsResult.count}`);
 }
 
 // ---- 実行 ----

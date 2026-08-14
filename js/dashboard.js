@@ -1,7 +1,8 @@
 // ダッシュボード(index.html)
-// 教材・問題集カード表示・全体サマリー・進捗の管理(リセット / エクスポート / インポート)を担う。
+// 教材・問題集カード表示・特設ページ一覧・全体サマリー・進捗の管理(リセット / エクスポート / インポート)を担う。
 
 import { MATERIALS, QUIZBANKS } from "./config.js";
+import { topicIds } from "../data/topics/index.js";
 import {
   exportStateJSON,
   importStateJSON,
@@ -54,6 +55,7 @@ export async function initDashboard() {
 
   const summaryEl = document.getElementById("overall-summary");
   const cardsEl = document.getElementById("material-cards");
+  const specialEl = document.getElementById("special-pages");
   const manageEl = document.getElementById("data-management");
 
   function materialCardHtml(materialId) {
@@ -138,6 +140,68 @@ export async function initDashboard() {
             </a>
           </div>
         </div>
+      </div>`;
+  }
+
+  // 特設ページ(問題演習でつまずいたトピックの解説ページ)一覧
+  async function renderSpecialPages() {
+    if (!specialEl) return;
+    if (topicIds.length === 0) {
+      specialEl.innerHTML = "";
+      specialEl.classList.add("hidden");
+      return;
+    }
+    const modules = await Promise.all(
+      topicIds.map((id) => import(`../data/topics/${id}.js`).catch(() => null))
+    );
+    const topics = modules
+      .map((m) => m?.topic)
+      .filter((t) => t && t.id && t.title);
+    if (topics.length === 0) {
+      specialEl.innerHTML = "";
+      specialEl.classList.add("hidden");
+      return;
+    }
+
+    const rows = topics
+      .map((t) => {
+        const badges = [
+          t.exam
+            ? `<span class="badge badge-blue badge-wrap">${escapeHtml(t.exam)}</span>`
+            : "",
+          ...(t.services ?? [])
+            .slice(0, 3)
+            .map((s) => `<span class="badge badge-gray">${escapeHtml(s)}</span>`),
+        ]
+          .filter(Boolean)
+          .join("");
+        return `
+          <a href="topic.html?id=${encodeURIComponent(t.id)}" class="flex items-center gap-3 px-5 py-3.5 hover:bg-aws-panel-2 transition-colors">
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+                <span class="font-bold text-[14px] leading-snug">${escapeHtml(t.title)}</span>
+                ${badges}
+              </div>
+              <p class="text-[12.5px] text-aws-sub leading-relaxed">${escapeHtml(t.description ?? "")}</p>
+            </div>
+            <span class="shrink-0 text-aws-sub">${icon("chevron-right", "w-4 h-4")}</span>
+          </a>`;
+      })
+      .join("");
+
+    specialEl.classList.remove("hidden");
+    specialEl.innerHTML = `
+      <div class="console-container">
+        <div class="console-header">
+          <div class="flex items-start gap-3">
+            <span class="icon-chip mt-0.5">${icon("bookmark", "w-5 h-5")}</span>
+            <div class="min-w-0">
+              <h3 class="console-title">特設ページ</h3>
+              <p class="console-desc">問題演習でつまずいたトピックを深掘りする解説ページです。全${topics.length}ページ。</p>
+            </div>
+          </div>
+        </div>
+        <div class="divide-y divide-aws-border-weak">${rows}</div>
       </div>`;
   }
 
@@ -300,5 +364,6 @@ export async function initDashboard() {
 
   renderSummary();
   renderCards();
+  renderSpecialPages();
   renderManagement();
 }
