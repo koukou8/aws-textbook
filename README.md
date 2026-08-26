@@ -78,6 +78,7 @@ aws-textbook/
 │   ├── material.js       # 教材ページ共通ロジック
 │   ├── quizbank.js       # 問題集ページ(モード選択・セッション)
 │   ├── dashboard.js      # ダッシュボード
+│   ├── qa.js             # 一問一答セクション(ダッシュボード)
 │   └── ui.js             # 共通UIヘルパー
 ├── data/
 │   ├── basics/           # AWS基礎(content-*.js / questions-*.js / index.js)
@@ -85,7 +86,8 @@ aws-textbook/
 │   ├── cloudops/         # CloudOps教材(分野別)
 │   ├── aif/              # AI Practitioner教材(分野別)
 │   ├── quizbank/         # CloudOps問題集(分野別 d*-a.js / d*-b.js)
-│   └── aifbank/          # AI Practitioner問題集(分野別 d*-a.js / d*-b.js)
+│   ├── aifbank/          # AI Practitioner問題集(分野別 d*-a.js / d*-b.js)
+│   └── qa/               # 一問一答(ダッシュボードのセクション)
 ├── docs/research/        # 試験ガイド・出題傾向の調査結果
 ├── scripts/validate.js   # データ検証スクリプト
 ├── package.json

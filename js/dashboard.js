@@ -3,6 +3,7 @@
 
 import { MATERIALS, QUIZBANKS } from "./config.js";
 import { topicIds } from "../data/topics/index.js";
+import { renderQaSection } from "./qa.js";
 import {
   exportStateJSON,
   importStateJSON,
@@ -55,6 +56,7 @@ export async function initDashboard() {
 
   const summaryEl = document.getElementById("overall-summary");
   const cardsEl = document.getElementById("material-cards");
+  const qaEl = document.getElementById("qa-drill");
   const specialEl = document.getElementById("special-pages");
   const manageEl = document.getElementById("data-management");
 
@@ -364,6 +366,7 @@ export async function initDashboard() {
 
   renderSummary();
   renderCards();
+  renderQaSection(qaEl);
   renderSpecialPages();
   renderManagement();
 }

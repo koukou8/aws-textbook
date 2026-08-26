@@ -638,6 +638,255 @@
     font-weight: 700;
     color: var(--color-aws-sub);
   }
+  .choice-letter-correct {
+    background-color: var(--color-aws-success);
+    border-color: var(--color-aws-success);
+    color: #fff;
+  }
+  .choice-letter-wrong {
+    background-color: var(--color-aws-error);
+    border-color: var(--color-aws-error);
+    color: #fff;
+  }
+
+  /* ==== 一問一答(ダッシュボード) ==== */
+  .qa-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color 0.15s ease;
+  }
+  .qa-summary::-webkit-details-marker {
+    display: none;
+  }
+  .qa-summary:hover {
+    background-color: var(--color-aws-panel-2);
+  }
+  .qa-item[open] > .qa-summary {
+    background-color: var(--color-aws-panel-2);
+  }
+  .qa-summary:focus-visible {
+    outline: 2px solid var(--color-aws-link);
+    outline-offset: -2px;
+  }
+  .qa-num {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 26px;
+    margin-top: 1px;
+    padding: 0 6px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in oklab, var(--color-aws-orange) 30%, transparent);
+    background-color: color-mix(in oklab, var(--color-aws-orange) 12%, transparent);
+    color: var(--color-aws-orange);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .qa-question {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.75;
+  }
+  /* 閉じているあいだは3行までに畳んで一覧性を保つ */
+  .qa-item:not([open]) .qa-question {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  .qa-chevron {
+    flex-shrink: 0;
+    margin-top: 3px;
+    color: var(--color-aws-sub);
+    transition: transform 0.18s ease;
+  }
+  .qa-item[open] > .qa-summary .qa-chevron {
+    transform: rotate(90deg);
+  }
+  .qa-body {
+    padding: 2px 20px 20px 20px;
+  }
+  .qa-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .qa-comment {
+    margin: 7px 0 0 6px;
+    padding: 2px 0 2px 11px;
+    border-left: 2px solid var(--color-aws-border);
+    font-size: 12.5px;
+    line-height: 1.85;
+    color: var(--color-aws-sub);
+  }
+  .qa-comment-ok {
+    border-left-color: var(--color-aws-success);
+  }
+  .qa-comment-ng {
+    border-left-color: var(--color-aws-error);
+  }
+  .qa-comment-mark {
+    display: inline-block;
+    margin-right: 7px;
+    font-weight: 700;
+  }
+  .qa-comment-ok .qa-comment-mark {
+    color: var(--color-aws-success);
+  }
+  .qa-comment-ng .qa-comment-mark {
+    color: var(--color-aws-error);
+  }
+  .qa-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .qa-hint {
+    font-size: 12px;
+    color: var(--color-aws-muted);
+  }
+  .qa-reveal {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .qa-answer {
+    padding: 13px 15px;
+    border: 1px solid var(--color-aws-success);
+    border-radius: 11px;
+    background-color: var(--color-aws-success-bg);
+  }
+  .qa-answer-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-aws-success);
+  }
+  .qa-answer-text {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.8;
+    color: var(--color-aws-text);
+  }
+  .qa-keypoint {
+    padding: 13px 15px;
+    border: 1px solid var(--color-aws-border);
+    border-left: 3px solid var(--color-aws-orange);
+    border-radius: 11px;
+    background-color: var(--color-aws-panel-2);
+    font-size: 13px;
+    line-height: 1.85;
+    color: var(--color-aws-text);
+  }
+  .qa-keypoint-label {
+    margin-bottom: 3px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-aws-orange);
+  }
+  .qa-related {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    border: 1px solid var(--color-aws-border);
+    border-radius: 11px;
+    background-color: var(--color-aws-panel);
+    color: var(--color-aws-sub);
+    font-size: 12.5px;
+    line-height: 1.6;
+    text-decoration: none;
+    transition: border-color 0.13s ease, background-color 0.13s ease,
+      color 0.13s ease;
+  }
+  .qa-related:hover {
+    border-color: color-mix(in oklab, var(--color-aws-orange) 45%, var(--color-aws-border));
+    background-color: color-mix(in oklab, var(--color-aws-orange) 6%, var(--color-aws-panel));
+    color: var(--color-aws-text);
+  }
+  .qa-related b {
+    font-weight: 700;
+    color: var(--color-aws-text);
+  }
+  .qa-detail {
+    border: 1px solid var(--color-aws-border);
+    border-radius: 11px;
+    background-color: var(--color-aws-panel);
+    overflow: hidden;
+  }
+  .qa-detail-summary {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 14px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-aws-link);
+    transition: background-color 0.15s ease;
+  }
+  .qa-detail-summary::-webkit-details-marker {
+    display: none;
+  }
+  .qa-detail-summary:hover {
+    background-color: var(--color-aws-link-bg);
+  }
+  .qa-detail-summary:focus-visible {
+    outline: 2px solid var(--color-aws-link);
+    outline-offset: -2px;
+  }
+  .qa-detail-summary svg {
+    transition: transform 0.18s ease;
+  }
+  .qa-detail[open] > .qa-detail-summary {
+    border-bottom: 1px solid var(--color-aws-border-weak);
+  }
+  .qa-detail[open] > .qa-detail-summary svg {
+    transform: rotate(90deg);
+  }
+  .qa-detail-body {
+    padding: 6px 16px 18px 16px;
+  }
+  .qa-refs {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-aws-border-weak);
+  }
+  .qa-refs-title {
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-aws-sub);
+  }
+  .material-content .qa-refs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+    font-size: 13px;
+  }
+  .material-content .qa-refs-list li {
+    margin: 0;
+  }
 
   /* ==== アイコンチップ ==== */
   .icon-chip {
