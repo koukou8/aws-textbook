@@ -35,6 +35,45 @@ export const topic = {
 <li>そのデバイス用に2つ目のカスタマーゲートウェイリソースを登録する</li>
 <li><strong>同じVGW(またはTGW)に対して2つ目のVPN接続を作成する</strong> — これで合計4トンネル、デバイス2台の構成になる</li>
 </ol>
+<figure class="diagram">
+<svg viewBox="0 0 700 172" role="img" aria-label="VPN接続1つではオンプレ側の1台の機器に2本のトンネルが終端して単一障害点になるのに対し、機器2台とVPN接続2つでは計4トンネルになり機器障害に耐えることを比較した図">
+  <line class="d-zone" x1="350" y1="8" x2="350" y2="166"/>
+
+  <text class="d-title-ng" x="174" y="20" text-anchor="middle">① VPN接続1つ(トンネル2本)</text>
+  <rect class="d-node-ng" x="30" y="56" width="110" height="48" rx="8"/>
+  <text class="d-text" x="85" y="76" text-anchor="middle">カスタマー</text>
+  <text class="d-text" x="85" y="91" text-anchor="middle">ゲートウェイ機器</text>
+  <path class="d-flow" d="M140 70 L216 70"/>
+  <path class="d-flow" d="M140 90 L216 90"/>
+  <text class="d-mono" x="178" y="65" text-anchor="middle">トンネル1</text>
+  <text class="d-mono" x="178" y="104" text-anchor="middle">トンネル2</text>
+  <rect class="d-node-accent" x="216" y="56" width="104" height="48" rx="8"/>
+  <text class="d-text" x="268" y="76" text-anchor="middle">VGW</text>
+  <text class="d-sub" x="268" y="91" text-anchor="middle">(AWS側)</text>
+  <text class="d-ng" x="85" y="122" text-anchor="middle">この1台が単一障害点</text>
+  <text class="d-sub" x="268" y="122" text-anchor="middle">AWS側は別エンドポイント</text>
+  <text class="d-ng" x="174" y="148" text-anchor="middle">機器が故障すると2本とも断 → 全断</text>
+
+  <text class="d-title-ok" x="526" y="20" text-anchor="middle">② 機器2台 + VPN接続2つ(計4トンネル)</text>
+  <rect class="d-node" x="382" y="46" width="110" height="40" rx="8"/>
+  <text class="d-text" x="437" y="63" text-anchor="middle">ゲートウェイ</text>
+  <text class="d-sub" x="437" y="78" text-anchor="middle">機器 1台目</text>
+  <rect class="d-node" x="382" y="100" width="110" height="40" rx="8"/>
+  <text class="d-text" x="437" y="117" text-anchor="middle">ゲートウェイ</text>
+  <text class="d-sub" x="437" y="132" text-anchor="middle">機器 2台目</text>
+  <path class="d-flow" d="M492 58 L572 76"/>
+  <path class="d-flow" d="M492 70 L572 82"/>
+  <path class="d-flow" d="M492 116 L572 94"/>
+  <path class="d-flow" d="M492 128 L572 100"/>
+  <text class="d-mono" x="532" y="52" text-anchor="middle">VPN接続1</text>
+  <text class="d-mono" x="532" y="140" text-anchor="middle">VPN接続2</text>
+  <rect class="d-node-accent" x="572" y="64" width="104" height="48" rx="8"/>
+  <text class="d-text" x="624" y="84" text-anchor="middle">VGW</text>
+  <text class="d-sub" x="624" y="99" text-anchor="middle">(同じものでよい)</text>
+  <text class="d-ok" x="526" y="160" text-anchor="middle">1台が故障しても、もう1台の2本で通信を継続</text>
+</svg>
+<figcaption>1つのVPN接続の2本は、オンプレミス側では同じ1台の機器に終端します。機器障害に耐えるには、2台目の機器と2つ目のVPN接続を追加して計4トンネルにします。</figcaption>
+</figure>
 <div class="callout callout-note"><span class="callout-title">ポイント</span><p>公式ドキュメントは、冗長構成では<strong>動的ルーティング(BGP)の使用を推奨</strong>しています。BGPなら片方のデバイスが落ちたとき、利用可能な経路への切り替えが自動で行われます。静的ルーティングでは障害時の経路切り替えを自動化できないため、冗長VPN構成の問題では「BGPで動的ルーティング」がセットで正解になりやすい論点です。</p></div>`,
     },
     {

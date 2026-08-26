@@ -806,6 +806,152 @@
     margin-bottom: 2px;
   }
 
+  /* ==== 図解(インラインSVG) ====
+   * <figure class="diagram"><svg viewBox="0 0 W H" ...>…</svg><figcaption>…</figcaption></figure>
+   * SVG内では下の d-* クラスだけを使い、色は直接指定しない(ライト/ダーク両対応のため)。 */
+  .material-content .diagram {
+    margin: 16px 0;
+    padding: 14px 14px 4px;
+    border: 1px solid var(--color-aws-border);
+    border-radius: 12px;
+    background-color: var(--color-aws-panel-2);
+    overflow-x: auto;
+  }
+  .material-content .diagram svg {
+    display: block;
+    width: 100%;
+    min-width: 560px;
+    height: auto;
+    font-family: var(--font-sans);
+  }
+  .material-content .diagram figcaption {
+    margin: 10px 0 8px;
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--color-aws-sub);
+    text-align: center;
+  }
+  /* 面(ボックス) */
+  .material-content .diagram .d-node {
+    fill: var(--color-aws-panel);
+    stroke: var(--color-aws-border);
+    stroke-width: 1.5;
+  }
+  .material-content .diagram .d-node-accent {
+    fill: color-mix(in oklab, var(--color-aws-accent) 15%, var(--color-aws-panel));
+    stroke: var(--color-aws-orange);
+    stroke-width: 1.5;
+  }
+  .material-content .diagram .d-node-info {
+    fill: var(--color-aws-link-bg);
+    stroke: var(--color-aws-link);
+    stroke-width: 1.5;
+  }
+  .material-content .diagram .d-node-ok {
+    fill: var(--color-aws-success-bg);
+    stroke: var(--color-aws-success);
+    stroke-width: 1.5;
+  }
+  .material-content .diagram .d-node-ng {
+    fill: var(--color-aws-error-bg);
+    stroke: var(--color-aws-error);
+    stroke-width: 1.5;
+  }
+  .material-content .diagram .d-node-warn {
+    fill: var(--color-aws-warning-bg);
+    stroke: var(--color-aws-warning);
+    stroke-width: 1.5;
+  }
+  /* 囲み(グループ・境界線) */
+  .material-content .diagram .d-zone {
+    fill: none;
+    stroke: var(--color-aws-border);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 4;
+  }
+  .material-content .diagram .d-boundary {
+    stroke: var(--color-aws-orange);
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+    fill: none;
+  }
+  /* 線・矢印 */
+  .material-content .diagram .d-flow {
+    fill: none;
+    stroke: var(--color-aws-sub);
+    stroke-width: 1.7;
+  }
+  .material-content .diagram .d-flow-ok {
+    fill: none;
+    stroke: var(--color-aws-success);
+    stroke-width: 2;
+  }
+  .material-content .diagram .d-flow-ng {
+    fill: none;
+    stroke: var(--color-aws-error);
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+  }
+  .material-content .diagram .d-arrow {
+    fill: var(--color-aws-sub);
+    stroke: none;
+  }
+  .material-content .diagram .d-arrow-ok {
+    fill: var(--color-aws-success);
+    stroke: none;
+  }
+  .material-content .diagram .d-arrow-ng {
+    fill: var(--color-aws-error);
+    stroke: none;
+  }
+  /* 文字 */
+  .material-content .diagram text {
+    font-family: var(--font-sans);
+    fill: var(--color-aws-text);
+  }
+  .material-content .diagram .d-title {
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .material-content .diagram .d-text {
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .material-content .diagram .d-sub {
+    font-size: 10.5px;
+    fill: var(--color-aws-sub);
+  }
+  .material-content .diagram .d-mono {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: var(--color-aws-sub);
+  }
+  .material-content .diagram .d-ok {
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--color-aws-success);
+  }
+  .material-content .diagram .d-ng {
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--color-aws-error);
+  }
+  .material-content .diagram .d-accent {
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--color-aws-orange);
+  }
+  .material-content .diagram .d-title-ok {
+    font-size: 12.5px;
+    font-weight: 700;
+    fill: var(--color-aws-success);
+  }
+  .material-content .diagram .d-title-ng {
+    font-size: 12.5px;
+    font-weight: 700;
+    fill: var(--color-aws-error);
+  }
+
   /* ==== 統計テーブル ==== */
   .stats-table {
     width: 100%;

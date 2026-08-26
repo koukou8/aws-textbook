@@ -80,6 +80,28 @@ export const chapters = [
 <div class="callout callout-important"><span class="callout-title">重要</span><p>...</p></div>
 ```
 
+- 図解(インラインSVG)。`<figure class="diagram">` で包み、`<figcaption>` で図の要点を1〜2文添える:
+
+```html
+<figure class="diagram">
+<svg viewBox="0 0 700 180" role="img" aria-label="図の内容を説明する代替テキスト">
+  <rect class="d-node" x="8" y="40" width="120" height="50" rx="8"/>
+  <text class="d-text" x="68" y="70" text-anchor="middle">ラベル</text>
+  <path class="d-flow" d="M129 65 L141 65"/>
+  <path class="d-arrow" d="M148 65 l-7 -4.5 v9 z"/>
+</svg>
+<figcaption>この図が示していることを1〜2文で。</figcaption>
+</figure>
+```
+
+  - **色を直接指定しない。** 下の `d-*` クラスだけを使う(ライト/ダーク両テーマで自動的に配色される)。
+    - 面: `d-node`(通常) / `d-node-accent`(主役) / `d-node-info`(青) / `d-node-ok`(緑) / `d-node-ng`(赤) / `d-node-warn`(黄)
+    - 囲み・区切り: `d-zone`(破線の囲み・パネル区切り) / `d-boundary`(オレンジの境界線)
+    - 線と矢印: `d-flow` / `d-flow-ok` / `d-flow-ng` と、矢じり用の `d-arrow` / `d-arrow-ok` / `d-arrow-ng`
+    - 文字: `d-title` / `d-title-ok` / `d-title-ng`(見出し)、`d-text`(ボックス内の主ラベル)、`d-sub`(補足)、`d-mono`(API名・CIDRなど等幅)、`d-ok` / `d-ng` / `d-accent`(強調ラベル)
+  - `viewBox` の**幅は 700 に固定**する(SVGは横幅いっぱいに拡大され、狭い画面では図の枠内だけが横スクロールする)。高さは内容に応じて決める。
+  - 矢じりは `<marker>` ではなく `<path class="d-arrow" d="…">` の三角形で描く(複数の図でIDが衝突しないため)。
+  - `role="img"` と `aria-label` を必ず付ける。`<image>` は `<img>` 禁止の検証に引っかかるため使わない。
 - `<a href="https://docs.aws.amazon.com/..." target="_blank" rel="noopener noreferrer">` (公式ドキュメントへのリンクのみ)
 - `<script>` `<style>` `<img>` は禁止。
 

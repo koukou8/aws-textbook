@@ -29,6 +29,64 @@ export const topic = {
 <li><strong>Transit Gatewayのルートテーブル</strong>: アタッチメントに関連付けられたルートテーブルで宛先を照合し、10.2.0.0/16が伝播(または静的追加)されていれば、VPC Bのアタッチメントへ転送する</li>
 <li><strong>戻りの通信</strong>: 応答パケットにも同じことが起きる。VPC B側のサブネットのルートテーブルにも「宛先10.1.0.0/16 → ターゲット tgw-xxxx」が必要。<strong>片方だけでは往復が成立しない</strong></li>
 </ol>
+<figure class="diagram">
+<svg viewBox="0 0 700 182" role="img" aria-label="VPC AのEC2からVPC BのEC2へパケットが届くまでに、VPC側ルートテーブル・TGWルートテーブル・相手VPC側ルートテーブルの3か所を順に通ることを示した図">
+  <text class="d-title" x="350" y="20" text-anchor="middle">VPC A の EC2 から VPC B の EC2 へ、パケットが参照するルートテーブルの順序</text>
+
+  <text class="d-accent" x="201" y="36" text-anchor="middle">VPC側(第1層)</text>
+  <text class="d-accent" x="358" y="36" text-anchor="middle">TGW側(第2層)</text>
+  <text class="d-accent" x="515" y="36" text-anchor="middle">VPC側(第3層)</text>
+
+  <rect class="d-node" x="8" y="42" width="104" height="60" rx="8"/>
+  <text class="d-text" x="60" y="61" text-anchor="middle">EC2</text>
+  <text class="d-sub" x="60" y="76" text-anchor="middle">VPC A</text>
+  <text class="d-mono" x="60" y="94" text-anchor="middle">10.1.0.0/16</text>
+
+  <path class="d-flow" d="M113 72 L122 72"/>
+  <path class="d-arrow" d="M129 72 l-7 -4.5 v9 z"/>
+
+  <rect class="d-node-ng" x="130" y="42" width="142" height="60" rx="8"/>
+  <text class="d-text" x="201" y="61" text-anchor="middle">① サブネットの</text>
+  <text class="d-text" x="201" y="76" text-anchor="middle">ルートテーブル</text>
+  <text class="d-mono" x="201" y="94" text-anchor="middle">10.2.0.0/16 → tgw</text>
+
+  <path class="d-flow" d="M273 72 L282 72"/>
+  <path class="d-arrow" d="M289 72 l-7 -4.5 v9 z"/>
+
+  <rect class="d-node-ok" x="290" y="42" width="136" height="60" rx="8"/>
+  <text class="d-text" x="358" y="61" text-anchor="middle">② Transit Gateway</text>
+  <text class="d-text" x="358" y="76" text-anchor="middle">ルートテーブル</text>
+  <text class="d-sub" x="358" y="94" text-anchor="middle">アタッチメントから伝播</text>
+
+  <path class="d-flow" d="M427 72 L436 72"/>
+  <path class="d-arrow" d="M443 72 l-7 -4.5 v9 z"/>
+
+  <rect class="d-node-ng" x="444" y="42" width="142" height="60" rx="8"/>
+  <text class="d-text" x="515" y="61" text-anchor="middle">③ サブネットの</text>
+  <text class="d-text" x="515" y="76" text-anchor="middle">ルートテーブル</text>
+  <text class="d-mono" x="515" y="94" text-anchor="middle">10.1.0.0/16 → tgw</text>
+
+  <path class="d-flow" d="M587 72 L596 72"/>
+  <path class="d-arrow" d="M603 72 l-7 -4.5 v9 z"/>
+
+  <rect class="d-node" x="604" y="42" width="88" height="60" rx="8"/>
+  <text class="d-text" x="648" y="61" text-anchor="middle">EC2</text>
+  <text class="d-sub" x="648" y="76" text-anchor="middle">VPC B</text>
+  <text class="d-mono" x="648" y="94" text-anchor="middle">10.2.0.0/16</text>
+
+  <text class="d-ng" x="201" y="120" text-anchor="middle">手動追加が必要</text>
+  <text class="d-sub" x="201" y="134" text-anchor="middle">アタッチしても自動追加されない</text>
+  <text class="d-ok" x="358" y="120" text-anchor="middle">伝播で自動登録される</text>
+  <text class="d-sub" x="358" y="134" text-anchor="middle">(問題文では正常と明示)</text>
+  <text class="d-ng" x="515" y="120" text-anchor="middle">戻り用も手動で必要</text>
+  <text class="d-sub" x="515" y="134" text-anchor="middle">片方だけでは往復しない</text>
+
+  <path class="d-flow" d="M648 102 L648 156 L60 156 L60 111"/>
+  <path class="d-arrow" d="M60 104 l-4.5 7 h9 z"/>
+  <text class="d-sub" x="354" y="171" text-anchor="middle">戻りの通信も同じ2層を逆にたどるため、双方のVPCに設定が必要</text>
+</svg>
+<figcaption>赤い①③がVPC側の第1層・第3層で、手動追加が必要な見落としポイントです。緑の②だけが伝播で自動登録されます。</figcaption>
+</figure>
 <h4>通信できない時のチェックリスト</h4>
 <ul>
 <li>セキュリティグループ・ネットワークACL(今回は確認済み)</li>

@@ -18,6 +18,56 @@ export const topic = {
       heading: "結論: 試験での決め手はこれだけ",
       html: `<p>VPC内のリソースから<strong>インターネットを経由せずに</strong>AWSサービスへアクセスしたい、という問題が出たら、まずVPCエンドポイントを疑います。2種類の使い分けは次の1行に集約できます。</p>
 <div class="callout callout-important"><span class="callout-title">重要</span><p><strong>宛先がS3またはDynamoDBで、VPC内からのアクセスだけでよいならゲートウェイ型(無料)。それ以外のサービス、またはオンプレミス・他VPCからのアクセスが必要ならインターフェイス型(有料)。</strong></p></div>
+<figure class="diagram">
+<svg viewBox="0 0 700 182" role="img" aria-label="ゲートウェイ型はルートテーブル経由でS3とDynamoDBにのみ無料で到達しオンプレミスからは使えないのに対し、インターフェイス型はサブネット内のENI経由でほぼ全サービスに有料で到達しオンプレミスからも利用できることを比較した図">
+  <line class="d-zone" x1="350" y1="8" x2="350" y2="176"/>
+
+  <text class="d-title" x="176" y="20" text-anchor="middle">ゲートウェイ型エンドポイント</text>
+  <rect class="d-node" x="16" y="44" width="76" height="48" rx="8"/>
+  <text class="d-text" x="54" y="64" text-anchor="middle">EC2</text>
+  <text class="d-sub" x="54" y="80" text-anchor="middle">VPC内</text>
+  <path class="d-flow" d="M93 68 L101 68"/>
+  <path class="d-arrow" d="M108 68 l-7 -4.5 v9 z"/>
+  <rect class="d-node-accent" x="108" y="44" width="132" height="48" rx="8"/>
+  <text class="d-text" x="174" y="64" text-anchor="middle">ルートテーブル</text>
+  <text class="d-sub" x="174" y="80" text-anchor="middle">プレフィックスリスト</text>
+  <path class="d-flow" d="M241 68 L249 68"/>
+  <path class="d-arrow" d="M256 68 l-7 -4.5 v9 z"/>
+  <rect class="d-node" x="256" y="44" width="84" height="48" rx="8"/>
+  <text class="d-text" x="298" y="64" text-anchor="middle">Amazon S3</text>
+  <text class="d-mono" x="298" y="80" text-anchor="middle">DynamoDB</text>
+  <rect class="d-node" x="52" y="104" width="100" height="32" rx="8"/>
+  <text class="d-text" x="102" y="124" text-anchor="middle">オンプレミス</text>
+  <path class="d-flow-ng" d="M152 116 L178 100"/>
+  <path class="d-flow-ng" d="M183 88 l10 10 M193 88 l-10 10"/>
+  <text class="d-ng" x="240" y="120" text-anchor="middle">到達不可</text>
+  <text class="d-sub" x="176" y="154" text-anchor="middle">対応: Amazon S3 / DynamoDB のみ</text>
+  <text class="d-ok" x="176" y="170" text-anchor="middle">追加料金なし</text>
+
+  <text class="d-title" x="524" y="20" text-anchor="middle">インターフェイス型(PrivateLink)</text>
+  <rect class="d-node" x="364" y="44" width="76" height="48" rx="8"/>
+  <text class="d-text" x="402" y="64" text-anchor="middle">EC2</text>
+  <text class="d-sub" x="402" y="80" text-anchor="middle">VPC内</text>
+  <path class="d-flow" d="M441 68 L449 68"/>
+  <path class="d-arrow" d="M456 68 l-7 -4.5 v9 z"/>
+  <rect class="d-node-accent" x="456" y="44" width="132" height="48" rx="8"/>
+  <text class="d-text" x="522" y="64" text-anchor="middle">サブネット内のENI</text>
+  <text class="d-sub" x="522" y="80" text-anchor="middle">プライベートIP</text>
+  <path class="d-flow" d="M589 68 L597 68"/>
+  <path class="d-arrow" d="M604 68 l-7 -4.5 v9 z"/>
+  <rect class="d-node" x="604" y="44" width="88" height="48" rx="8"/>
+  <text class="d-text" x="648" y="64" text-anchor="middle">各種AWS</text>
+  <text class="d-sub" x="648" y="80" text-anchor="middle">サービス</text>
+  <rect class="d-node" x="400" y="104" width="100" height="32" rx="8"/>
+  <text class="d-text" x="450" y="124" text-anchor="middle">オンプレミス</text>
+  <path class="d-flow-ok" d="M501 114 L521 99"/>
+  <path class="d-arrow-ok" d="M527 95 l-8.5 1 l5 6 z"/>
+  <text class="d-ok" x="610" y="120" text-anchor="middle">VPN / DX 経由で可</text>
+  <text class="d-sub" x="524" y="154" text-anchor="middle">対応: ほぼ全AWSサービス + SaaS</text>
+  <text class="d-ng" x="524" y="170" text-anchor="middle">時間料金 + データ処理料金</text>
+</svg>
+<figcaption>決め手は「宛先サービス」と「アクセス元」です。S3宛てでもアクセス元がオンプレミスなら、ゲートウェイ型は使えずインターフェイス型が正解になります。</figcaption>
+</figure>
 <p>選択肢に「NATゲートウェイを追加する」がある場合も注意が必要です。NATゲートウェイでもS3へは到達できますが、トラフィックはインターネット経由になり(パブリックIPを使用)、処理料金と時間料金が発生します。「インターネットに出さない」「コスト最小」という要件がある時点で不正解になります。</p>`,
     },
     {

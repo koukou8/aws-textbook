@@ -30,6 +30,54 @@ export const topic = {
 <li>ベンダーはその顧客のリクエストを受けて、登録されたARN — つまり<strong>あなたのロール</strong> — を引き受けます。信頼ポリシーはベンダーのアカウントIDしか見ていないため、この<code>AssumeRole</code>は成功します。</li>
 <li>結果として、別の顧客があなたのリソースにアクセスできてしまいます。ベンダーは悪意なく、誰の代理で動いているかを混同したまま操作を実行しました。これが「混乱した(confused)代理(deputy)」です。</li>
 </ol>
+<figure class="diagram">
+<svg viewBox="0 0 700 268" role="img" aria-label="外部IDが無い場合は別の顧客の依頼であなたのロールが引き受けられてしまい、外部IDがある場合は値が一致せず拒否されることを比較した図">
+  <line class="d-zone" x1="350" y1="8" x2="350" y2="260"/>
+
+  <text class="d-title-ng" x="175" y="20" text-anchor="middle">外部IDなし: 引き受けが成立してしまう</text>
+  <rect class="d-node" x="50" y="32" width="250" height="42" rx="8"/>
+  <text class="d-text" x="175" y="50" text-anchor="middle">別のAWS顧客</text>
+  <text class="d-sub" x="175" y="66" text-anchor="middle">あなたのロールARNを登録</text>
+  <path class="d-flow" d="M175 74 L175 85"/>
+  <path class="d-arrow" d="M175 92 l-4.5 -7 h9 z"/>
+  <text class="d-sub" x="183" y="87">自分の代理として依頼</text>
+  <rect class="d-node-accent" x="50" y="92" width="250" height="46" rx="8"/>
+  <text class="d-text" x="175" y="111" text-anchor="middle">SaaSベンダー(代理)</text>
+  <text class="d-mono" x="175" y="127" text-anchor="middle">sts:AssumeRole(ARNのみ)</text>
+  <path class="d-flow" d="M175 138 L175 149"/>
+  <path class="d-arrow" d="M175 156 l-4.5 -7 h9 z"/>
+  <text class="d-sub" x="183" y="151">引き受け要求</text>
+  <rect class="d-node" x="50" y="156" width="250" height="46" rx="8"/>
+  <text class="d-text" x="175" y="175" text-anchor="middle">あなたのロール</text>
+  <text class="d-sub" x="175" y="191" text-anchor="middle">信頼ポリシー: ベンダーのアカウントIDのみ</text>
+  <path class="d-flow-ng" d="M175 202 L175 213"/>
+  <path class="d-arrow-ng" d="M175 220 l-4.5 -7 h9 z"/>
+  <rect class="d-node-ng" x="50" y="220" width="250" height="36" rx="8"/>
+  <text class="d-ng" x="175" y="243" text-anchor="middle">成功 → 他人にリソースを読まれる</text>
+
+  <text class="d-title-ok" x="525" y="20" text-anchor="middle">外部IDあり: 不一致で拒否される</text>
+  <rect class="d-node" x="400" y="32" width="250" height="42" rx="8"/>
+  <text class="d-text" x="525" y="50" text-anchor="middle">別のAWS顧客</text>
+  <text class="d-sub" x="525" y="66" text-anchor="middle">あなたのロールARNを登録</text>
+  <path class="d-flow" d="M525 74 L525 85"/>
+  <path class="d-arrow" d="M525 92 l-4.5 -7 h9 z"/>
+  <text class="d-sub" x="533" y="87">自分の代理として依頼</text>
+  <rect class="d-node-accent" x="400" y="92" width="250" height="46" rx="8"/>
+  <text class="d-text" x="525" y="111" text-anchor="middle">SaaSベンダー(代理)</text>
+  <text class="d-mono" x="525" y="127" text-anchor="middle">ExternalId = 67890(依頼元の顧客の値)</text>
+  <path class="d-flow" d="M525 138 L525 149"/>
+  <path class="d-arrow" d="M525 156 l-4.5 -7 h9 z"/>
+  <text class="d-sub" x="533" y="151">引き受け要求</text>
+  <rect class="d-node" x="400" y="156" width="250" height="46" rx="8"/>
+  <text class="d-text" x="525" y="175" text-anchor="middle">あなたのロール</text>
+  <text class="d-sub" x="525" y="191" text-anchor="middle">信頼ポリシー: sts:ExternalId = 12345</text>
+  <path class="d-flow-ok" d="M525 202 L525 213"/>
+  <path class="d-arrow-ok" d="M525 220 l-4.5 -7 h9 z"/>
+  <rect class="d-node-ok" x="400" y="220" width="250" height="36" rx="8"/>
+  <text class="d-ok" x="525" y="243" text-anchor="middle">不一致で拒否 → 守られる</text>
+</svg>
+<figcaption>ベンダーは「依頼してきた顧客の外部ID」を必ず付けて引き受けます。顧客側は他人の外部IDを指定できないため、なりすましによる引き受けが成立しません。</figcaption>
+</figure>
 <p>ポイントは、<strong>ベンダー自身は悪意がなく、信頼ポリシーも「ベンダーのアカウントだけを信頼する」という意味では正しく書かれている</strong>ことです。欠けているのは「<em>誰の代理として</em>引き受けているのか」という文脈の検証だけです。</p>`,
     },
     {

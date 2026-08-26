@@ -80,10 +80,21 @@ export const topic = {
 3. **対比・比較表** — 混同しやすい選択肢との違いを表で整理(`table-wrap` 必須)
 4. **典型パターン・試験での注意** — 「この要件ならこれ」のパターン列挙と、ひっかけへの警告
 
+**図解を1つは入れる。** 既存の特設ページはすべて図を持っている。文章と表だけで説明しきれる論点でも、
+「境界線がどこにあるか」「パケット/リクエストがどの順で何を通るか」「対策ありとなしで何が変わるか」は
+図にすると一段わかりやすくなる。置き場所は「結論」か「仕組み」のセクションが基本。
+書き方(`<figure class="diagram">` + インラインSVG + `d-*` クラス)は docs/content-guide.md の
+「sections[].html で使える要素」に仕様と雛形がある。既存ページのSVGをコピーして作り替えるのが早い:
+
+- 対比型(2パネルを破線で区切る): `data/topics/confused-deputy-external-id.js`、`data/topics/vpc-endpoint-types.js`
+- フロー型(横一列 + 注釈 + 戻り矢印): `data/topics/transit-gateway-routing.js`
+- 境界型(どこまでが対象範囲かを示す): `data/topics/flow-logs-troubleshooting.js`
+- 表形式の対比(行=サービス、列=分類): `data/topics/cloudtrail-event-types.js`
+
 **本文の規約**は docs/content-guide.md の「2. 教材(章)スキーマ」の
 「sections[].html で使える要素」と「JavaScript構文上の注意」、「3. 文体・表記」に従う。要点:
 
-- 使える要素は `<p>` `<strong>` `<em>` `<code>` `<ul>/<ol>` `<h4>` `<pre><code>` 表(`table-wrap`で包む) callout 3種 公式ドキュメントへの`<a>`のみ。`<script>` `<style>` `<img>` と Tailwind クラスの直書きは禁止(スタイルは自動適用される)
+- 使える要素は `<p>` `<strong>` `<em>` `<code>` `<ul>/<ol>` `<h4>` `<pre><code>` 表(`table-wrap`で包む) callout 3種 図解(`figure.diagram` + インラインSVG) 公式ドキュメントへの`<a>`のみ。`<script>` `<style>` `<img>` と Tailwind クラスの直書きは禁止(スタイルは自動適用される)
 - html はバッククォートのテンプレートリテラルなので本文にバッククォートを書かない。`${` は `\${` にエスケープ
 - 日本語「です・ます」調。サービス名は公式表記(AWS Lambda / Amazon SQS の接頭辞を間違えない。2025年以降の名称を使う)
 

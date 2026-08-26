@@ -20,6 +20,42 @@ export const topic = {
 <div class="callout callout-important"><span class="callout-title">重要</span><p><strong>リソースそのものを操作するAPI(バケットを作る・削除する)はマネジメントイベントで既定オン。リソースの中身を操作するAPI(オブジェクトを読む・書く・消す)はデータイベントで既定オフ。</strong></p></div>
 <p>AWSの用語では、前者を<strong>コントロールプレーン操作</strong>、後者を<strong>データプレーン操作</strong>と呼びます。<code>CreateBucket</code> や <code>DeleteBucket</code> はコントロールプレーンなので追加設定なしで記録されますが、<code>GetObject</code> / <code>PutObject</code> / <code>DeleteObject</code> はデータプレーンであり、<strong>証跡(トレイル)またはCloudTrail Lakeのイベントデータストアでデータイベントの記録を明示的に有効化しない限り、どこにも残りません</strong>。</p>
 <p>この境界は他のサービスでも同じ考え方です。AWS Lambdaなら、関数を作る <code>CreateFunction</code> はマネジメントイベント、関数を実行する <code>Invoke</code> はデータイベントです。Amazon DynamoDBなら、テーブルを作る <code>CreateTable</code> はマネジメントイベント、項目を読み書きする <code>GetItem</code> / <code>PutItem</code> はデータイベントです。</p>
+<figure class="diagram">
+<svg viewBox="0 0 700 250" role="img" aria-label="S3・Lambda・DynamoDBそれぞれについて、リソース自体を操作するAPIはマネジメントイベントで既定オン、中身を操作するAPIはデータイベントで既定オフであることを対比した図">
+  <text class="d-sub" x="64" y="56" text-anchor="middle">サービス</text>
+
+  <rect class="d-node-ok" x="130" y="28" width="272" height="48" rx="8"/>
+  <text class="d-text" x="266" y="48" text-anchor="middle">マネジメントイベント</text>
+  <text class="d-sub" x="266" y="65" text-anchor="middle">コントロールプレーン / 既定オン・無料</text>
+
+  <rect class="d-node-ng" x="416" y="28" width="276" height="48" rx="8"/>
+  <text class="d-text" x="554" y="48" text-anchor="middle">データイベント</text>
+  <text class="d-sub" x="554" y="65" text-anchor="middle">データプレーン / 既定オフ・有料(要有効化)</text>
+
+  <path class="d-boundary" d="M409 20 L409 222"/>
+
+  <text class="d-text" x="64" y="109" text-anchor="middle">Amazon S3</text>
+  <rect class="d-node" x="130" y="84" width="272" height="40" rx="8"/>
+  <text class="d-mono" x="266" y="109" text-anchor="middle">CreateBucket / DeleteBucket</text>
+  <rect class="d-node" x="416" y="84" width="276" height="40" rx="8"/>
+  <text class="d-mono" x="554" y="109" text-anchor="middle">GetObject / PutObject / DeleteObject</text>
+
+  <text class="d-text" x="64" y="155" text-anchor="middle">AWS Lambda</text>
+  <rect class="d-node" x="130" y="130" width="272" height="40" rx="8"/>
+  <text class="d-mono" x="266" y="155" text-anchor="middle">CreateFunction / UpdateFunctionCode</text>
+  <rect class="d-node" x="416" y="130" width="276" height="40" rx="8"/>
+  <text class="d-mono" x="554" y="155" text-anchor="middle">Invoke(関数の実行)</text>
+
+  <text class="d-text" x="64" y="201" text-anchor="middle">Amazon DynamoDB</text>
+  <rect class="d-node" x="130" y="176" width="272" height="40" rx="8"/>
+  <text class="d-mono" x="266" y="201" text-anchor="middle">CreateTable / DeleteTable</text>
+  <rect class="d-node" x="416" y="176" width="276" height="40" rx="8"/>
+  <text class="d-mono" x="554" y="201" text-anchor="middle">GetItem / PutItem / Query</text>
+
+  <text class="d-accent" x="350" y="240" text-anchor="middle">右側は証跡またはCloudTrail Lakeで有効化しない限り、どこにも残らない</text>
+</svg>
+<figcaption>境界は「リソースそのものを操作するか、リソースの中身を操作するか」です。サービスが変わってもこの線の引き方は同じです。</figcaption>
+</figure>
 <p>なお、データイベントが既定オフなのは<strong>量とコストの問題</strong>です。オブジェクトの読み書きは1日に数億回発生することもあり、これを全件記録すると保管料もクエリ負荷も跳ね上がります。だからこそAWSはオプトイン方式にしており、試験でも「有効化が必要」という点が繰り返し問われます。</p>`,
     },
     {

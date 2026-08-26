@@ -18,6 +18,54 @@ export const topic = {
       heading: "結論: フローログが見ている「境界」を押さえる",
       html: `<p>VPCフローログは、<strong>ENI(Elastic Network Interface)を出入りするIPトラフィックのメタデータ</strong>を記録します。記録される <code>ACCEPT</code> / <code>REJECT</code> は、<strong>セキュリティグループとネットワークACLがそのパケットを通したか落としたか</strong>の判定結果です。つまりフローログが見ているのは、ENIという1本の境界線だけです。</p>
 <div class="callout callout-important"><span class="callout-title">重要</span><p><strong>インバウンドがACCEPTとして記録されている = そのパケットはセキュリティグループとネットワークACLを通過し、ENIまで確実に届いている</strong>ということです。したがって次に疑うのはENIより内側、すなわち<strong>ゲストOSのファイアウォールと、そのポートで待ち受けているプロセス</strong>です。フローログはOS内部の挙動を一切記録しません。</p></div>
+<figure class="diagram">
+<svg viewBox="0 0 700 142" role="img" aria-label="クライアントからEC2の待ち受けプロセスまでの経路を並べ、フローログがENIまでの範囲しか記録せず、OSのファイアウォールと待ち受けプロセスは記録対象外であることを示した図">
+  <text class="d-accent" x="319" y="24" text-anchor="middle">フローログが ACCEPT / REJECT を記録</text>
+  <path class="d-flow" d="M222 38 L222 32 L416 32 L416 38"/>
+  <text class="d-ng" x="561" y="24" text-anchor="middle">フローログには一切現れない</text>
+  <path class="d-flow-ng" d="M430 38 L430 32 L692 32 L692 38"/>
+
+  <rect class="d-node" x="8" y="48" width="90" height="56" rx="8"/>
+  <text class="d-text" x="53" y="72" text-anchor="middle">クライアント</text>
+  <text class="d-mono" x="53" y="90" text-anchor="middle">:443 へ接続</text>
+
+  <path class="d-flow" d="M99 76 L103 76"/>
+  <path class="d-arrow" d="M110 76 l-7 -4.5 v9 z"/>
+
+  <rect class="d-node" x="110" y="48" width="100" height="56" rx="8"/>
+  <text class="d-text" x="160" y="72" text-anchor="middle">経路</text>
+  <text class="d-mono" x="160" y="90" text-anchor="middle">RT / IGW / NAT</text>
+
+  <path class="d-flow" d="M211 76 L215 76"/>
+  <path class="d-arrow" d="M222 76 l-7 -4.5 v9 z"/>
+
+  <rect class="d-node-info" x="222" y="48" width="180" height="56" rx="8"/>
+  <text class="d-text" x="312" y="70" text-anchor="middle">セキュリティグループ</text>
+  <text class="d-text" x="312" y="88" text-anchor="middle">ネットワークACL</text>
+
+  <path class="d-flow" d="M403 76 L423 76"/>
+  <path class="d-arrow" d="M430 76 l-7 -4.5 v9 z"/>
+
+  <path class="d-boundary" d="M416 42 L416 118"/>
+  <text class="d-accent" x="416" y="132" text-anchor="middle">ENI(境界)</text>
+
+  <rect class="d-node-ng" x="430" y="48" width="130" height="56" rx="8"/>
+  <text class="d-text" x="495" y="72" text-anchor="middle">OSのファイアウォール</text>
+  <text class="d-mono" x="495" y="90" text-anchor="middle">iptables / nftables</text>
+
+  <path class="d-flow" d="M561 76 L565 76"/>
+  <path class="d-arrow" d="M572 76 l-7 -4.5 v9 z"/>
+
+  <rect class="d-node-ng" x="572" y="48" width="120" height="56" rx="8"/>
+  <text class="d-text" x="632" y="72" text-anchor="middle">待ち受けプロセス</text>
+  <text class="d-mono" x="632" y="90" text-anchor="middle">:443 で LISTEN 中か</text>
+
+  <text class="d-sub" x="160" y="132" text-anchor="middle">記録が無い → 経路を疑う</text>
+  <text class="d-sub" x="300" y="132" text-anchor="middle">REJECT 1件 → SG / NACL</text>
+  <text class="d-sub" x="561" y="132" text-anchor="middle">ACCEPT のみで応答無し → ここ</text>
+</svg>
+<figcaption>フローログが見ているのはENIという1本の境界線だけです。インバウンドACCEPTが出ていれば、パケットはこの線まで確実に届いています。</figcaption>
+</figure>
 <p>もう一つの決め手が<strong>差分診断</strong>です。「同じサブネット・同じセキュリティグループ・同じネットワークACLの別インスタンスは正常」という前提は、<strong>共有されているコンポーネントを容疑者から外す</strong>ための情報です。ルートテーブルはサブネット単位で関連付けられるため、ルートが欠けていれば同じサブネットの別インスタンスも同様に通信できないはずです。片方だけが壊れているなら、犯人は<strong>そのインスタンスだけが持っているもの</strong>——OS内部の設定、プロセスの状態、アプリケーションの構成——に絞り込めます。</p>`,
     },
     {
